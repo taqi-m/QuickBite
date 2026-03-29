@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Consumption Metrics Widget Special Layout -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/navy"
+    android:padding="@dimen/spacing_md">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="@dimen/spacing_md">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="📊 CONSUMPTION METRICS"
+            android:textSize="@dimen/text_size_tiny"
+            android:fontFamily="sans-serif-black"
+            android:textColor="@color/primary"
+            android:textAllCaps="true"
+            android:letterSpacing="0.1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ℹ️"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- L3: Proportional Dividers - Metrics Bars -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:weightSum="7"
+        android:gravity="bottom">
+
+        <View android:layout_width="0dp" android:layout_height="19dp" android:layout_weight="1"
+            android:background="@color/primary" android:layout_marginEnd="1dp" />
+        <View android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1"
+            android:background="@color/primary" android:layout_marginEnd="1dp" />
+        <View android:layout_width="0dp" android:layout_height="45dp" android:layout_weight="1"
+            android:background="@color/primary" android:layout_marginEnd="1dp" />
+        <View android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1"
+            android:background="@color/primary" android:layout_marginEnd="1dp" />
+        <View android:layout_width="0dp" android:layout_height="24dp" android:layout_weight="1"
+            android:background="@color/primary" android:layout_marginEnd="1dp" />
+        <View android:layout_width="0dp" android:layout_height="14dp" android:layout_weight="1"
+            android:background="@color/primary" android:layout_marginEnd="1dp" />
+        <View android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1"
+            android:background="@color/primary" />
+    </LinearLayout>
+
+    <!-- Footer -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="@dimen/spacing_md">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="POINTS EARNED"
+                android:textSize="8sp"
+                android:fontFamily="sans-serif-black"
+                android:textColor="#80FFFFFF"
+                android:textAllCaps="true" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1,240"
+                    android:textSize="18sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textColor="@color/white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" QB"
+                    android:textSize="@dimen/text_size_tiny"
+                    android:fontFamily="sans-serif-black"
+                    android:textColor="@color/accent"
+                    android:layout_marginStart="@dimen/spacing_xs" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="REDEEM REWARDS"
+            android:textSize="8sp"
+            android:fontFamily="sans-serif-black"
+            android:textColor="@color/primary"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp"
+            android:backgroundTint="#20E74C3C" />
+    </LinearLayout>
+</LinearLayout>

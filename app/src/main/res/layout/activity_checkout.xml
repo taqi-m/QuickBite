@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Root Container: Standard Layout for Top App Bar + Scrollable Content + Fixed Footer -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/md_theme_light_background">
+
+    <!-- Top App Bar -->
+    <RelativeLayout
+        android:id="@+id/toolbar_checkout"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_alignParentTop="true"
+        android:background="@color/md_theme_light_surface"
+        android:elevation="@dimen/elevation_app_bar"
+        android:paddingHorizontal="@dimen/spacing_lg">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/navigate_back"
+            android:src="@drawable/ic_arrow_back_toolbar"
+            app:tint="@color/navy" />
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/spacing_lg"
+            android:layout_toEndOf="@id/btn_back"
+            android:fontFamily="sans-serif-black"
+            android:text="@string/checkout"
+            android:textColor="@color/navy"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:id="@+id/scroll_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/footer_checkout"
+        android:layout_below="@id/toolbar_checkout"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_lg"
+            android:paddingTop="@dimen/spacing_xl"
+            android:paddingBottom="@dimen/spacing_lg">
+
+            <!-- ORDER SUMMARY SECTION -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_lg">
+
+                <TextView
+                    android:id="@+id/tv_order_summary_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:fontFamily="sans-serif-black"
+                    android:text="@string/order_summary"
+                    android:textColor="@color/navy"
+                    android:textSize="@dimen/text_size_title" />
+
+                <TextView
+                    android:id="@+id/tv_item_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:fontFamily="sans-serif-bold"
+                    android:text="@string/three_items"
+                    android:textColor="@color/primary"
+                    android:textSize="@dimen/text_size_body" />
+            </RelativeLayout>
+
+            <!-- Order Items -->
+            <LinearLayout
+                android:id="@+id/ll_order_items"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_xxl"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/item_order_1"
+                    layout="@layout/item_checkout_order" />
+
+                <include
+                    android:id="@+id/item_order_2"
+                    layout="@layout/item_checkout_order" />
+
+                <include
+                    android:id="@+id/item_order_3"
+                    layout="@layout/item_checkout_order" />
+            </LinearLayout>
+
+            <!-- PROMO CODE SECTION -->
+            <TextView
+                android:id="@+id/tv_promo_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:fontFamily="sans-serif-black"
+                android:text="@string/promo_code"
+                android:textColor="@color/navy"
+                android:textSize="@dimen/text_size_title" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_xxl"
+                android:orientation="horizontal"
+                android:weightSum="10">
+
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="7">
+
+                    <EditText
+                        android:id="@+id/et_promo_code"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_promo_input"
+                        android:fontFamily="sans-serif"
+                        android:hint="@string/enter_coupon_code"
+                        android:importantForAutofill="no"
+                        android:inputType="textCapCharacters"
+                        android:paddingStart="44dp"
+                        android:paddingEnd="@dimen/spacing_lg"
+                        android:textColor="@color/navy"
+                        android:textColorHint="@color/grey_text"
+                        android:textSize="@dimen/text_size_body" />
+
+                    <ImageView
+                        android:layout_width="@dimen/icon_size_medium"
+                        android:layout_height="@dimen/icon_size_medium"
+                        android:layout_gravity="start|center_vertical"
+                        android:layout_marginStart="@dimen/spacing_md"
+                        android:contentDescription="@string/promo_icon"
+                        android:src="@drawable/ic_confirmation_number_128"
+                        app:tint="@color/grey_text" />
+                </FrameLayout>
+
+                <Button
+                    android:id="@+id/btn_apply_promo"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="@dimen/spacing_sm"
+                    android:layout_weight="3"
+                    android:background="@drawable/bg_promo_button"
+                    android:fontFamily="sans-serif-black"
+                    android:text="@string/apply"
+                    android:textAllCaps="false"
+                    android:textColor="@color/primary"
+                    android:textSize="@dimen/text_size_body" />
+            </LinearLayout>
+
+            <!-- PAYMENT METHOD SECTION -->
+            <TextView
+                android:id="@+id/tv_payment_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:fontFamily="sans-serif-black"
+                android:text="@string/payment_method"
+                android:textColor="@color/navy"
+                android:textSize="@dimen/text_size_title" />
+
+            <!-- Payment Cards -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:orientation="vertical">
+
+                <!-- Credit Card Option -->
+                <LinearLayout
+                    android:id="@+id/rl_payment_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="@dimen/spacing_md"
+                    android:background="@drawable/bg_payment_selected"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingHorizontal="@dimen/spacing_lg"
+                    android:paddingVertical="@dimen/spacing_lg">
+
+                    <ImageView
+                        android:id="@+id/img_card"
+                        android:layout_width="@dimen/icon_size_medium"
+                        android:layout_height="@dimen/icon_size_medium"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/payment_method"
+                        android:src="@drawable/ic_credit_card_128"
+                        app:tint="@color/primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/spacing_lg"
+                        android:layout_marginEnd="@dimen/spacing_lg"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-black"
+                            android:text="@string/credit_debit_card"
+                            android:textColor="@color/navy"
+                            android:textSize="@dimen/text_size_subhead" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="sans-serif"
+                            android:text="@string/payment_card_subtitle"
+                            android:textColor="@color/grey_text"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/iv_check_card"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:contentDescription="@string/cd_back_button"
+                        android:src="@drawable/ic_check_circle_128"
+                        app:tint="@color/primary" />
+                </LinearLayout>
+
+                <!-- Cash Option -->
+                <LinearLayout
+                    android:id="@+id/rl_payment_cash"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="@drawable/bg_payment_unselected"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingHorizontal="@dimen/spacing_lg"
+                    android:paddingVertical="@dimen/spacing_lg">
+                    <ImageView
+                        android:id="@+id/img_cod"
+                        android:layout_width="@dimen/icon_size_medium"
+                        android:layout_height="@dimen/icon_size_medium"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/payment_method"
+                        android:src="@drawable/ic_payments_128"
+                        app:tint="@color/grey_text" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/spacing_lg"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-black"
+                            android:text="@string/cash_on_delivery"
+                            android:textColor="@color/navy"
+                            android:textSize="@dimen/text_size_subhead" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:fontFamily="sans-serif"
+                            android:text="@string/payment_cash_subtitle"
+                            android:textColor="@color/grey_text"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/iv_check_cod"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:contentDescription="@string/cd_back_button"
+                        android:src="@drawable/ic_check_circle_128"
+                        app:tint="@color/primary" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- PRICE BREAKDOWN -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:orientation="vertical">
+
+                <!-- Subtotal Row -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="@dimen/spacing_sm">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/subtotal"
+                        android:textColor="@color/grey_text"
+                        android:textSize="@dimen/text_size_body" />
+
+                    <TextView
+                        android:id="@+id/tv_subtotal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/price_18_50"
+                        android:textColor="@color/grey_text"
+                        android:textSize="@dimen/text_size_body" />
+                </RelativeLayout>
+
+                <!-- Delivery Fee Row -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="@dimen/spacing_sm">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/str_delivery_fee"
+                        android:textColor="@color/grey_text"
+                        android:textSize="@dimen/text_size_body" />
+
+                    <TextView
+                        android:id="@+id/tv_delivery_fee"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/price_2_00"
+                        android:textColor="@color/grey_text"
+                        android:textSize="@dimen/text_size_body" />
+                </RelativeLayout>
+
+                <!-- Discount Row -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="@dimen/spacing_sm">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/discount"
+                        android:textColor="@color/grey_text"
+                        android:textSize="@dimen/text_size_body" />
+
+                    <TextView
+                        android:id="@+id/tv_discount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/price_minus_0_00"
+                        android:textColor="#27AE60"
+                        android:textSize="@dimen/text_size_body" />
+                </RelativeLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:layout_marginBottom="@dimen/spacing_md"
+                    android:background="@color/colorDivider" />
+
+                <!-- Total Amount Row -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_xl">
+
+                    <TextView
+                        android:id="@+id/tv_total_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:fontFamily="sans-serif-black"
+                        android:text="@string/total_amount"
+                        android:textColor="@color/navy"
+                        android:textSize="@dimen/text_size_title" />
+
+                    <TextView
+                        android:id="@+id/tv_total_amount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:fontFamily="sans-serif-black"
+                        android:text="@string/price_20_50"
+                        android:textColor="@color/primary"
+                        android:textSize="24sp" />
+                </RelativeLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Fixed Footer -->
+    <RelativeLayout
+        android:id="@+id/footer_checkout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="#CCFFFFFF"
+        android:elevation="@dimen/elevation_bottom_nav"
+        android:padding="@dimen/spacing_lg">
+
+        <Button
+            android:id="@+id/btn_place_order"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_place_order_button"
+            android:drawableEnd="@drawable/ic_chevron_right_128"
+            android:drawableTint="@android:color/white"
+            android:fontFamily="sans-serif-black"
+            android:text="@string/place_order"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/text_size_title" />
+    </RelativeLayout>
+</RelativeLayout>
+

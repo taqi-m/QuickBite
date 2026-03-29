@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Active Kitchen Item Layout -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.QuickBite.Card"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/kitchen_item_height"
+    android:layout_margin="@dimen/spacing_md"
+    android:clickable="true"
+    tools:ignore="HardcodedText"
+    android:focusable="true">
+
+    <!-- L4: Relative Positioning Layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_gravity="center_vertical"
+        android:padding="@dimen/spacing_md">
+
+        <!-- Kitchen Icon -->
+        <FrameLayout
+            android:id="@+id/frame_kitchen_icon"
+            android:layout_width="@dimen/kitchen_icon_size"
+            android:layout_height="@dimen/kitchen_icon_size"
+            android:layout_marginEnd="@dimen/spacing_md">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_card" />
+
+            <ImageView
+                android:id="@+id/ic_kitchen_icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="null"
+                android:padding="8dp"
+                android:gravity="center"
+                app:tint="@color/primary"
+                android:src="@drawable/ic_soup_kitchen_128" />
+        </FrameLayout>
+
+        <!-- Kitchen Info Container -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_centerVertical="true"
+            android:orientation="vertical">
+
+            <!-- Kitchen Name and Rating -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/spacing_xs">
+
+                <TextView
+                    android:id="@+id/tv_kitchen_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Umami House"
+                    android:textAppearance="@style/TextAppearance.QuickBite.Body"
+                    android:fontFamily="sans-serif-black"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.02"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/tv_kitchen_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4.9 ★"
+                    android:textSize="@dimen/text_size_tiny"
+                    android:fontFamily="sans-serif-black"
+                    android:textColor="@color/accent"
+                    android:background="@color/md_theme_light_primaryContainer"
+                    android:paddingHorizontal="@dimen/spacing_xs"
+                    android:paddingVertical="2dp"
+                    android:layout_marginStart="@dimen/spacing_sm" />
+            </LinearLayout>
+
+            <!-- Kitchen Category -->
+            <TextView
+                android:id="@+id/tv_kitchen_category"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="JAPANESE • $$$"
+                android:textSize="@dimen/text_size_tiny"
+                android:fontFamily="sans-serif-black"
+                android:textColor="@color/md_theme_light_onSurfaceVariant"
+                android:layout_marginBottom="@dimen/spacing_sm" />
+
+            <!-- Kitchen Details -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- Delivery Time -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginEnd="@dimen/spacing_lg">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_schedule_128"
+                        app:tint="@color/primary"
+                        android:layout_marginEnd="@dimen/spacing_xs" />
+
+                    <TextView
+                        android:id="@+id/tv_delivery_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="20m"
+                        android:textSize="@dimen/text_size_tiny"
+                        android:fontFamily="sans-serif-black"
+                        android:textColor="@color/primary" />
+                </LinearLayout>
+
+                <!-- Delivery Fee -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_delivery_dining_128"
+                        app:tint="@color/md_theme_light_onSurfaceVariant"
+                        android:layout_marginEnd="@dimen/spacing_xs" />
+
+                    <TextView
+                        android:id="@+id/tv_delivery_fee"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="FREE"
+                        android:textSize="@dimen/text_size_tiny"
+                        android:fontFamily="sans-serif-black"
+                        android:textColor="@color/md_theme_light_onSurfaceVariant" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+
+
+        <!-- Action Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_kitchen_action"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            app:icon="@drawable/ic_chevron_right_128"
+            app:iconTint="@color/md_theme_light_onSurface"
+            android:backgroundTint="@color/md_theme_light_surfaceVariant" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

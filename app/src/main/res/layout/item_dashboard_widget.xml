@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Dashboard Widget Item Layout -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.QuickBite.Card"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/widget_min_height"
+    android:layout_margin="@dimen/spacing_xs"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Widget Content Container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Widget Background (can be gradient for promotions) -->
+        <View
+            android:id="@+id/view_widget_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_widget_promotion" />
+
+        <!-- Widget Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_md">
+
+            <!-- Header with Icon and Controls -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/tv_widget_icon"
+                    android:layout_width="@dimen/widget_icon_size"
+                    android:layout_height="@dimen/widget_icon_size"
+                    android:layout_marginEnd="@dimen/spacing_sm"
+                    android:gravity="center"
+                    android:src="@drawable/ic_local_fire_department_128" />
+
+                <TextView
+                    android:id="@+id/tv_widget_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Live Promotions"
+                    android:textAppearance="@style/TextAppearance.QuickBite.SectionHeader"
+                    android:textColor="@color/md_theme_light_onPrimary" />
+
+                <!-- Widget Controls -->
+                <LinearLayout
+                    android:id="@+id/layout_widget_controls"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_widget_drag"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="@dimen/spacing_xs"
+                        app:iconTint="@color/md_theme_light_onPrimary"
+                        app:icon="@drawable/ic_open_with_128"
+                        app:iconSize="24dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_widget_settings"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        app:iconTint="@color/md_theme_light_onPrimary"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:icon="@drawable/ic_filter_list_128"
+                        app:iconSize="24dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Widget Content Area -->
+            <LinearLayout
+                android:id="@+id/layout_widget_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- Default Content Template -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_flash_deal_chip"
+                        android:text="FLASH DEAL"
+                        android:textSize="14sp"
+                        android:textColor="@color/md_theme_light_onPrimary" />
+
+                    <TextView
+                        android:id="@+id/tv_widget_main_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-black"
+                        android:textStyle="bold"
+                        android:text="50% OFF"
+                        android:textColor="@color/md_theme_light_onPrimary"
+                        android:textSize="36sp" />
+
+                    <TextView
+                        android:id="@+id/tv_widget_sub_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_xs"
+                        android:fontFamily="sans-serif-medium"
+                        android:textStyle="italic"
+                        android:gravity="center"
+                        android:text="Burgers and Wings • Ends in 2h"
+                        android:textColor="@color/md_theme_light_onPrimary"
+                        android:textSize="@dimen/text_size_caption" />
+                </LinearLayout>
+
+                <!-- Widget Action Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_widget_action"
+                    style="@style/Widget.QuickBite.Button.InversePrimary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:layout_gravity="bottom"
+                    android:minWidth="60dp"
+                    android:text="CLAIM"
+                    android:textSize="@dimen/text_size_caption" />
+
+
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</com.google.android.material.card.MaterialCardView>

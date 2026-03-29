@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- QuickBite Brand Colors -->
+    <color name="primary">#E74C3C</color>
+    <color name="primary_dark">#C0392B</color>
+    <color name="accent">#F39C12</color>
+    <color name="navy">#1B2631</color>
+    <color name="grey_text">#7F8C8D</color>
+    <color name="background_light">#F8F9FA</color>
+    <color name="background_dark">#121212</color>
+
+    <!-- Legacy Support -->
+    <color name="colorPrimary">@color/primary</color>
+    <color name="colorPrimaryDark">@color/primary_dark</color>
+    <color name="colorAccent">@color/accent</color>
+    <color name="colorBackground">@color/background_light</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorTextPrimary">@color/navy</color>
+    <color name="colorTextSecondary">@color/grey_text</color>
+    <color name="colorSuccess">#27AE60</color>
+    <color name="colorChipBackground">#FDEDEC</color>
+    <color name="colorDivider">#D5D8DC</color>
+
+    <!-- Material Design 3 Light Theme -->
+    <color name="md_theme_light_primary">@color/primary</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#FFDBDB</color>
+    <color name="md_theme_light_onPrimaryContainer">@color/primary_dark</color>
+    <color name="md_theme_light_secondary">@color/accent</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_background">@color/background_light</color>
+    <color name="md_theme_light_onBackground">@color/navy</color>
+    <color name="md_theme_light_surface">#FFFFFF</color>
+    <color name="md_theme_light_onSurface">@color/navy</color>
+    <color name="md_theme_light_surfaceVariant">#F1F3F4</color>
+    <color name="md_theme_light_onSurfaceVariant">@color/grey_text</color>
+    <color name="md_theme_light_outline">#D5D8DC</color>
+    <color name="md_theme_light_shadow">#000000</color>
+
+    <!-- Material Design 3 Dark Theme -->
+    <color name="md_theme_dark_primary">@color/primary</color>
+    <color name="md_theme_dark_onPrimary">#FFFFFF</color>
+    <color name="md_theme_dark_primaryContainer">@color/primary_dark</color>
+    <color name="md_theme_dark_onPrimaryContainer">#FFDBDB</color>
+    <color name="md_theme_dark_secondary">@color/accent</color>
+    <color name="md_theme_dark_onSecondary">#1C1B1F</color>
+    <color name="md_theme_dark_background">@color/background_dark</color>
+    <color name="md_theme_dark_onBackground">#E6E1E5</color>
+    <color name="md_theme_dark_surface">#1F1F1F</color>
+    <color name="md_theme_dark_onSurface">#E6E1E5</color>
+    <color name="md_theme_dark_surfaceVariant">#49454F</color>
+    <color name="md_theme_dark_onSurfaceVariant">#CAC4D0</color>
+    <color name="md_theme_dark_outline">#938F99</color>
+    <color name="md_theme_dark_shadow">#000000</color>
+
+    <!-- Alias for Background -->
+    <color name="md_theme_background">@color/md_theme_light_background</color>
+
+    <!-- Widget Specific Colors -->
+    <color name="widget_promotion_start">@color/primary</color>
+    <color name="widget_promotion_end">@color/primary_dark</color>
+    <color name="widget_surface_light">#FFFFFF</color>
+    <color name="widget_surface_dark">#1F1F1F</color>
+    <color name="widget_border_light">#E3E5E5</color>
+    <color name="widget_border_dark">#48454F</color>
+
+    <!-- Status Colors -->
+    <color name="status_preparing">@color/accent</color>
+    <color name="status_delivery">@color/primary</color>
+    <color name="status_success">@color/colorSuccess</color>
+
+    <!-- System Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00000000</color>
+</resources>

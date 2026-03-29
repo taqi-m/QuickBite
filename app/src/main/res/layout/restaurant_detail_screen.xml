@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Restaurant Detail Screen Layout -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/md_theme_light_background"
+    tools:context=".RestaurantDetailActivity">
+
+    <!-- L1: Complex Scrolling - AppBarLayout with CollapsingToolbarLayout -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="256dp"
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:contentScrim="@color/primary"
+            app:statusBarScrim="@color/primary_dark">
+
+            <!-- Hero Restaurant Image -->
+            <ImageView
+                android:id="@+id/iv_restaurant_hero"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/restaurant_cover"
+                app:layout_collapseMode="parallax"
+                app:layout_collapseParallaxMultiplier="0.7"
+                android:contentDescription="@string/cd_restaurant_hero_image" />
+
+            <!-- Dark Overlay for Hero Image -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_hero_overlay"
+                app:layout_collapseMode="parallax" />
+
+            <!-- Glassmorphism Toolbar -->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="@android:color/transparent"
+                app:layout_collapseMode="pin"
+                app:navigationIcon="@drawable/ic_arrow_back_toolbar"
+                app:title=""
+                app:titleTextColor="@color/white">
+
+                <!-- Custom Toolbar Layout for Right Actions -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="end"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginEnd="@dimen/spacing_lg">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_favorite"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        android:backgroundTint="#33FFFFFF"
+                        app:icon="@drawable/ic_favorite_128"
+                        app:iconTint="@color/white" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_share"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="#33FFFFFF"
+                        app:icon="@drawable/ic_share_128"
+                        app:iconTint="@color/white" />
+                </LinearLayout>
+            </androidx.appcompat.widget.Toolbar>
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content with NestedScrollView -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/spacing_md"
+            android:orientation="vertical">
+
+            <!-- L2: Restaurant Info Section with Overlapping Logo -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_restaurant_info_top"
+                android:paddingHorizontal="@dimen/spacing_lg"
+                android:paddingBottom="@dimen/spacing_lg">
+
+                <!-- Restaurant Name and Info -->
+                <LinearLayout
+                    android:id="@+id/layout_restaurant_info"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/frame_restaurant_logo">
+
+                    <TextView
+                        android:id="@+id/tv_restaurant_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Artisan Pizza Hub"
+                        android:textSize="24sp"
+                        android:fontFamily="sans-serif-black"
+                        android:textColor="@color/md_theme_light_onBackground"
+                        android:letterSpacing="-0.02" />
+
+                    <!-- Restaurant Category and Rating -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="@dimen/spacing_xs">
+
+                        <TextView
+                            android:id="@+id/tv_restaurant_category"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Italian • Gourmet Pizza"
+                            android:textSize="@dimen/text_size_body"
+                            android:textColor="@color/md_theme_light_onSurfaceVariant" />
+
+                        <!-- Rating Divider -->
+                        <View
+                            android:layout_width="4dp"
+                            android:layout_height="4dp"
+                            android:layout_marginHorizontal="@dimen/spacing_sm"
+                            android:background="@drawable/shape_rating_divider" />
+
+                        <!-- Rating Section -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_marginEnd="4dp"
+                                android:src="@drawable/ic_star_128"
+                                android:contentDescription="@string/cd_rating_star" />
+
+                            <TextView
+                                android:id="@+id/tv_restaurant_rating"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="4.8"
+                                android:textSize="@dimen/text_size_body"
+                                android:fontFamily="sans-serif-black"
+                                android:textColor="@color/accent" />
+
+                            <TextView
+                                android:id="@+id/tv_rating_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="(500+ reviews)"
+                                android:textSize="@dimen/text_size_caption"
+                                android:textColor="@color/md_theme_light_onSurfaceVariant"
+                                android:layout_marginStart="@dimen/spacing_xs" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+
+                <!-- L2: Overlapping Restaurant Logo -->
+                <FrameLayout
+                    android:id="@+id/frame_restaurant_logo"
+                    android:layout_width="56dp"
+                    android:layout_height="match_parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+                    <!-- Restaurant Logo -->
+                    <ImageView
+                        android:id="@+id/iv_restaurant_logo"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/restaurant_logo_placeholder"
+                        android:contentDescription="@string/cd_restaurant_logo" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <!-- L3: Delivery Stats Strip with Proportional Dividers -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@color/md_theme_light_surface"
+                android:paddingVertical="@dimen/spacing_lg"
+                android:weightSum="3"
+                android:divider="@drawable/divider_vertical_stats"
+                android:showDividers="middle">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/delivery_label"
+                        android:textAppearance="@style/TextAppearance.QuickBite.Caption"
+                        android:textColor="@color/md_theme_light_onSurfaceVariant" />
+
+                    <TextView
+                        android:id="@+id/tv_delivery_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="20-30 min"
+                        android:textAppearance="@style/TextAppearance.QuickBite.Body"
+                        android:fontFamily="sans-serif-black"
+                        android:textColor="@color/md_theme_light_onSurface"
+                        android:layout_marginTop="@dimen/spacing_xs" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/fee_label"
+                        android:textAppearance="@style/TextAppearance.QuickBite.Caption"
+                        android:textColor="@color/md_theme_light_onSurfaceVariant" />
+
+                    <TextView
+                        android:id="@+id/tv_delivery_fee"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="$0.99"
+                        android:textAppearance="@style/TextAppearance.QuickBite.Body"
+                        android:fontFamily="sans-serif-black"
+                        android:textColor="@color/md_theme_light_onSurface"
+                        android:layout_marginTop="@dimen/spacing_xs" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/distance_label"
+                        android:textAppearance="@style/TextAppearance.QuickBite.Caption"
+                        android:textColor="@color/md_theme_light_onSurfaceVariant" />
+
+                    <TextView
+                        android:id="@+id/tv_restaurant_distance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1.2 km"
+                        android:textAppearance="@style/TextAppearance.QuickBite.Body"
+                        android:fontFamily="sans-serif-black"
+                        android:textColor="@color/md_theme_light_onSurface"
+                        android:layout_marginTop="@dimen/spacing_xs" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Category Chips Section -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/md_theme_light_surface"
+                android:paddingHorizontal="@dimen/spacing_lg"
+                android:paddingBottom="@dimen/spacing_lg"
+                android:scrollbars="none"
+                android:clipToPadding="false">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_best_sellers"
+                        style="@style/Widget.QuickBite.Chip.Selected"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        android:text="@string/category_best_sellers"
+                        android:checkable="true"
+                        android:checked="true" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_specialty_pizza"
+                        style="@style/Widget.QuickBite.Chip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        android:text="@string/category_specialty_pizza"
+                        android:checkable="true" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_sides"
+                        style="@style/Widget.QuickBite.Chip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        android:text="@string/category_sides"
+                        android:checkable="true" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_beverages"
+                        style="@style/Widget.QuickBite.Chip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        android:text="@string/category_beverages"
+                        android:checkable="true" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_combos"
+                        style="@style/Widget.QuickBite.Chip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        android:text="@string/category_combos"
+                        android:checkable="true" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_desserts"
+                        style="@style/Widget.QuickBite.Chip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/category_desserts"
+                        android:checkable="true" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <!-- Menu Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/md_theme_light_background"
+                android:paddingHorizontal="@dimen/spacing_lg"
+                android:paddingTop="@dimen/spacing_xl">
+
+                <!-- Section Header -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/section_best_sellers"
+                    android:textSize="20sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textColor="@color/md_theme_light_onBackground"
+                    android:layout_marginBottom="@dimen/spacing_lg" />
+
+                <!-- Menu Items RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_menu_items"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:itemCount="3"
+                    tools:listitem="@layout/item_menu_food" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- L5: Floating View Cart Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_view_cart"
+        style="@style/Widget.QuickBite.Button.ViewCart"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:layout_marginBottom="10dp"
+        android:layout_gravity="bottom"
+        android:text="@string/view_cart_with_items"
+        android:textAllCaps="true"
+        android:textSize="@dimen/text_size_body"
+        android:fontFamily="sans-serif-black"
+        android:visibility="visible" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

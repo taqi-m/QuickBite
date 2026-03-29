@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Menu Food Item Layout -->
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.QuickBite.Card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_lg"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/md_theme_light_surface"
+    app:cardCornerRadius="@dimen/corner_radius_lg"
+    app:cardElevation="1dp">
+
+    <!-- L4: Relative Positioning for Menu Item Content -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_md">
+
+        <!-- Food Image with Add Button -->
+        <FrameLayout
+            android:id="@+id/frame_food_image"
+            android:layout_width="112dp"
+            android:layout_height="112dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true">
+
+            <!-- Food Image -->
+            <ImageView
+                android:id="@+id/iv_food_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:background="@drawable/bg_food_image"
+                android:src="@drawable/image_2"
+                android:contentDescription="@string/cd_food_image" />
+
+            <!-- Add to Cart Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_to_cart"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="-8dp"
+                android:text="@string/add_button"
+                android:textSize="@dimen/text_size_micro"
+                android:fontFamily="sans-serif-black"
+                android:textColor="@color/primary"
+                android:backgroundTint="@color/md_theme_light_surface"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="2dp"
+                app:cornerRadius="@dimen/corner_radius_sm"
+                android:minWidth="60dp"
+                android:paddingHorizontal="@dimen/spacing_md" />
+        </FrameLayout>
+
+        <!-- Food Details Container -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/frame_food_image"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/spacing_md"
+            android:orientation="vertical">
+
+            <!-- Veg/Non-Veg Indicator -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="@dimen/spacing_xs">
+
+                <ImageView
+                    android:id="@+id/iv_veg_indicator"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="@dimen/spacing_xs"
+                    android:src="@drawable/ic_pentagon_128"
+                    android:contentDescription="@string/cd_veg_indicator" />
+
+                <TextView
+                    android:id="@+id/tv_veg_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/veg_label"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textColor="@color/colorSuccess"
+                    android:textAllCaps="true" />
+            </LinearLayout>
+
+            <!-- Food Name -->
+            <TextView
+                android:id="@+id/tv_food_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Margherita Classica"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-black"
+                android:textColor="@color/md_theme_light_onSurface"
+                android:lineSpacingExtra="2dp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginBottom="@dimen/spacing_xs" />
+
+            <!-- Food Description -->
+            <TextView
+                android:id="@+id/tv_food_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="San Marzano tomatoes, fresh buffalo mozzarella, basil, EVOO."
+                android:textSize="@dimen/text_size_body"
+                android:textColor="@color/md_theme_light_onSurfaceVariant"
+                android:lineSpacingExtra="2dp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginBottom="@dimen/spacing_md" />
+
+            <!-- Price and Rating Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <!-- Price -->
+                <TextView
+                    android:id="@+id/tv_food_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="$14.00"
+                    android:textSize="18sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textColor="@color/primary" />
+
+                <!-- Rating Section -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginStart="@dimen/spacing_lg">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginEnd="4dp"
+                        android:src="@drawable/ic_star_128"
+                        android:contentDescription="@string/cd_rating_star" />
+
+                    <TextView
+                        android:id="@+id/tv_food_rating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="4.9 (120)"
+                        android:textSize="@dimen/text_size_caption"
+                        android:textColor="@color/md_theme_light_onSurfaceVariant" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+</com.google.android.material.card.MaterialCardView>

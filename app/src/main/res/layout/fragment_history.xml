@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/md_theme_light_background"
+    android:orientation="vertical">
+
+    <!-- Tabs Section (L3: LinearLayout with weightSum) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/md_theme_light_background"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <!-- Tab 1: All Orders (Selected) -->
+        <LinearLayout
+            android:id="@+id/tab_all_orders"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_tab_item"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/spacing_lg">
+
+            <TextView
+                android:id="@+id/tv_tab_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-bold"
+                android:text="@string/all_orders"
+                android:textColor="@color/primary"
+                android:textSize="@dimen/text_size_body" />
+
+            <View
+                android:id="@+id/indicator_all"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:background="@color/primary" />
+        </LinearLayout>
+
+        <!-- Tab 2: Completed -->
+        <LinearLayout
+            android:id="@+id/tab_completed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_tab_item"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/spacing_lg">
+
+            <TextView
+                android:id="@+id/tv_tab_completed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-bold"
+                android:text="@string/completed"
+                android:textColor="@color/grey_text"
+                android:textSize="@dimen/text_size_body" />
+
+            <View
+                android:id="@+id/indicator_completed"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+
+        <!-- Tab 3: Cancelled -->
+        <LinearLayout
+            android:id="@+id/tab_cancelled"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_tab_item"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingVertical="@dimen/spacing_lg">
+
+            <TextView
+                android:id="@+id/tv_tab_cancelled"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-bold"
+                android:text="@string/cancelled"
+                android:textColor="@color/grey_text"
+                android:textSize="@dimen/text_size_body" />
+
+            <View
+                android:id="@+id/indicator_cancelled"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:background="@android:color/transparent" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/colorDivider" />
+
+    <!-- Main Content (ScrollView) -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_lg"
+            android:paddingTop="@dimen/spacing_xl"
+            android:paddingBottom="@dimen/spacing_xl">
+
+            <!-- Section Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:fontFamily="sans-serif-black"
+                android:text="@string/past_orders"
+                android:textColor="@color/navy"
+                android:textSize="@dimen/text_size_title" />
+
+            <!-- L7: TableLayout for Order History -->
+            <TableLayout
+                android:id="@+id/table_orders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:stretchColumns="1">
+
+                <!-- Header Row -->
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="@dimen/spacing_md">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.3"
+                        android:fontFamily="sans-serif-bold"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="@dimen/spacing_sm"
+                        android:text="@string/date"
+                        android:textAllCaps="true"
+                        android:textColor="@color/grey_text"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.5"
+                        android:fontFamily="sans-serif-bold"
+                        android:paddingStart="0dp"
+                        android:paddingEnd="@dimen/spacing_sm"
+                        android:text="@string/restaurant"
+                        android:textAllCaps="true"
+                        android:textColor="@color/grey_text"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="0.2"
+                        android:fontFamily="sans-serif-bold"
+                        android:gravity="end"
+                        android:text="@string/total"
+                        android:textAllCaps="true"
+                        android:textColor="@color/grey_text"
+                        android:textSize="12sp"/>
+                </TableRow>
+
+                <!-- Divider -->
+                <TableRow>
+                    <View
+                        android:layout_height="1dp"
+                        android:layout_span="3"
+                        android:background="@color/colorDivider" />
+                </TableRow>
+
+                <!-- Order 1: Artisan Pizza Hub -->
+                <include
+                    android:id="@+id/order_1"
+                    layout="@layout/item_order_history"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TableRow>
+                    <View
+                        android:layout_height="1dp"
+                        android:layout_span="3"
+                        android:background="#1AE74C3C" />
+                </TableRow>
+
+                <!-- Order 2: QuickBite Burgers -->
+                <include
+                    android:id="@+id/order_2"
+                    layout="@layout/item_order_history"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TableRow>
+                    <View
+                        android:layout_height="1dp"
+                        android:layout_span="3"
+                        android:background="#1AE74C3C" />
+                </TableRow>
+
+                <!-- Order 3: Sushi Express -->
+                <include
+                    android:id="@+id/order_3"
+                    layout="@layout/item_order_history"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TableRow>
+                    <View
+                        android:layout_height="1dp"
+                        android:layout_span="3"
+                        android:background="#1AE74C3C" />
+                </TableRow>
+
+                <!-- Order 4: Taco Fiesta -->
+                <include
+                    android:id="@+id/order_4"
+                    layout="@layout/item_order_history"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TableRow>
+                    <View
+                        android:layout_height="1dp"
+                        android:layout_span="3"
+                        android:background="#1AE74C3C" />
+                </TableRow>
+
+                <!-- Order 5: Green Salad Co. -->
+                <include
+                    android:id="@+id/order_5"
+                    layout="@layout/item_order_history"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <TableRow>
+                    <View
+                        android:layout_height="1dp"
+                        android:layout_span="3"
+                        android:background="#1AE74C3C" />
+                </TableRow>
+            </TableLayout>
+
+            <!-- Quick Summary Section (L6: GridLayout) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xxl"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_lg"
+                    android:fontFamily="sans-serif-bold"
+                    android:letterSpacing="0.1"
+                    android:text="@string/quick_summary"
+                    android:textAllCaps="true"
+                    android:textColor="@color/grey_text"
+                    android:textSize="12sp" />
+
+                <!-- L6: GridLayout with 2 columns -->
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:rowCount="1"
+                    android:useDefaultMargins="false">
+
+                    <!-- Card 1: Monthly Total -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        android:background="@drawable/bg_summary_card_primary"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_lg">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif"
+                            android:text="@string/monthly_total"
+                            android:textColor="@color/grey_text"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tv_monthly_total"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_sm"
+                            android:fontFamily="sans-serif-black"
+                            android:text="@string/price_154_15"
+                            android:textColor="@color/primary"
+                            android:textSize="20sp" />
+                    </LinearLayout>
+
+                    <!-- Card 2: Total Orders -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_marginStart="@dimen/spacing_sm"
+                        android:background="@drawable/bg_summary_card_secondary"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_lg">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif"
+                            android:text="@string/total_orders"
+                            android:textColor="@color/grey_text"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tv_total_orders"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_sm"
+                            android:fontFamily="sans-serif-black"
+                            android:text="@string/count_12"
+                            android:textColor="@color/navy"
+                            android:textSize="20sp" />
+                    </LinearLayout>
+                </GridLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
+
+

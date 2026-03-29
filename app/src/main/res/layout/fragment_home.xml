@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/spacing_xl">
+
+        <!-- Header with Command Center Title -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/header_height"
+            android:background="@color/md_theme_light_surface"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_lg"
+            android:paddingVertical="@dimen/spacing_lg"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <!-- L2: Precise Alignment - ConstraintLayout for header elements -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+
+                <!-- Dashboard Icon & Title -->
+                <LinearLayout
+                    android:id="@+id/layout_title"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        android:background="@drawable/bg_primary_rounded"
+                        android:gravity="center">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_dashboard_128" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Command Center"
+                            android:textAppearance="@style/TextAppearance.QuickBite.Headline" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PERSONALIZED DASHBOARD"
+                            android:textAppearance="@style/TextAppearance.QuickBite.Caption" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Action Buttons -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_settings"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="@dimen/spacing_sm"
+                        app:cornerRadius="@dimen/corner_radius_md"
+                        android:backgroundTint="@color/md_theme_light_surfaceVariant"
+                        app:icon="@drawable/ic_settings_input_component_128"
+                        app:iconTint="@color/md_theme_light_onSurface" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_cart"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:cornerRadius="@dimen/corner_radius_md"
+                        android:backgroundTint="@color/md_theme_light_primaryContainer"
+                        app:icon="@drawable/ic_shopping_cart_128"
+                        app:iconTint="@color/primary" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Search Bar -->
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_lg">
+
+                <EditText
+                    android:id="@+id/et_command_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_gravity="start|center_vertical"
+                    android:background="@drawable/bg_promo_input"
+                    android:fontFamily="sans-serif"
+                    android:hint="Execute command (e.g. 'find sushi')..."
+                    android:importantForAutofill="no"
+                    android:inputType="textCapCharacters"
+                    android:paddingStart="44dp"
+                    android:paddingEnd="@dimen/spacing_lg"
+                    android:textColor="@color/navy"
+                    android:textColorHint="@color/grey_text"
+                    android:textSize="@dimen/text_size_body" />
+
+                <ImageView
+                    android:layout_width="@dimen/icon_size_medium"
+                    android:layout_height="@dimen/icon_size_medium"
+                    android:layout_gravity="start|center_vertical"
+                    android:layout_marginStart="@dimen/spacing_md"
+                    android:contentDescription="@string/promo_icon"
+                    android:src="@drawable/ic_terminal_128"
+                    app:tint="@color/grey_text" />
+            </FrameLayout>
+
+            <!--<com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/search_bar_height"
+                android:layout_marginTop="@dimen/spacing_lg"
+                app:hintEnabled="false"
+                app:startIconDrawable="@android:drawable/ic_search_category_default">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_command_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/md_theme_light_surfaceVariant"
+                    android:hint="Execute command (e.g. 'find sushi')..."
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:textSize="@dimen/text_size_body" />
+            </com.google.android.material.textfield.TextInputLayout>-->
+
+        </LinearLayout>
+
+        <!-- Dashboard Widgets Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_lg"
+            android:paddingTop="@dimen/spacing_lg">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/dashboard_widgets"
+                android:textAppearance="@style/TextAppearance.QuickBite.Title" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_dashboard_widgets"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:nestedScrollingEnabled="false"
+                tools:itemCount="1"
+                tools:listitem="@layout/item_dashboard_widget" />
+        </LinearLayout>
+
+        <!-- Quick Reorder Section -->
+<!--        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_lg"
+            android:background="@color/md_theme_light_surfaceVariant"
+            android:orientation="vertical"
+            android:paddingHorizontal="@dimen/spacing_lg"
+            android:paddingVertical="@dimen/spacing_lg">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/quick_reorder"
+                    android:textAppearance="@style/TextAppearance.QuickBite.Title" />
+
+                <Button
+                    android:id="@+id/btn_manage_reorder"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/manage_button"
+                    android:textColor="@color/primary" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:text="@string/favorite_orders_subtitle"
+                android:textAppearance="@style/TextAppearance.QuickBite.Caption" />
+        </LinearLayout>-->
+
+        <!-- Active Kitchens Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_lg"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginHorizontal="@dimen/spacing_lg"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/active_kitchens"
+                        android:textAppearance="@style/TextAppearance.QuickBite.Title" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/nearby_restaurants"
+                        android:textAppearance="@style/TextAppearance.QuickBite.Caption" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_filter"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/primary"
+                    app:icon="@drawable/ic_list_128"
+                    app:iconSize="24dp"
+                    app:iconTint="@color/white" />
+            </LinearLayout>
+
+            <!-- Active Kitchens List -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_active_kitchens"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:nestedScrollingEnabled="false"
+                tools:itemCount="2"
+                tools:listitem="@layout/item_active_kitchen" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
+
+
+
+

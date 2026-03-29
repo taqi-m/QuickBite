@@ -1,0 +1,245 @@
+<resources>
+    <string name="app_name">QuickBite</string>
+
+    <!-- Command Center -->
+    <string name="command_center_title">Command Center</string>
+    <string name="personalized_dashboard">Personalized Dashboard</string>
+    <string name="search_hint">Execute command (e.g. \'find sushi\')...</string>
+
+    <!-- Marquee -->
+    <string name="order_status">ORDER #4292: PREPARING</string>
+    <string name="delivery_time">🚚 EST. ARRIVAL: 12:45 PM</string>
+    <string name="driver_location">📍 DRIVER: 0.8KM AWAY</string>
+    <string name="delivery_icon">Delivery icon</string>
+
+    <!-- Sections -->
+    <string name="section_quick_reorder">🕒 QUICK RE-ORDER</string>
+    <string name="section_active_kitchens">📋 ACTIVE KITCHENS</string>
+    <string name="manage_button">MANAGE</string>
+
+    <!-- Quick Reorder Items -->
+    <string name="food_burger_kit">Burger Kit</string>
+    <string name="food_pepperoni">Pepperoni</string>
+    <string name="food_salad_box">Salad Box</string>
+    <string name="food_iced_latte">Iced Latte</string>
+
+    <!-- Dashboard Widgets -->
+    <string name="widget_live_promotions">Live Promotions</string>
+    <string name="widget_my_flavors">My Flavors</string>
+    <string name="widget_nearby_gems">Nearby Gems</string>
+    <string name="widget_consumption_metrics">Consumption Metrics</string>
+
+    <!-- Promotion -->
+    <string name="flash_deal">FLASH DEAL</string>
+    <string name="promotion_discount">50% OFF</string>
+    <string name="promotion_details">Burgers &amp; Wings • Ends in 2h</string>
+    <string name="claim_button">CLAIM</string>
+
+    <!-- Kitchen Details -->
+    <string name="kitchen_umami">Umami House</string>
+    <string name="kitchen_sweet">Sweet Delights</string>
+    <string name="category_japanese">JAPANESE • $$$</string>
+    <string name="category_bakery">BAKERY • $$</string>
+    <string name="rating_umami">4.9 ★</string>
+    <string name="rating_sweet">4.5 ★</string>
+    <string name="delivery_free">FREE</string>
+    <string name="time_20m">20m</string>
+    <string name="time_35m">35m</string>
+
+    <!-- Metrics -->
+    <string name="points_earned">Points Earned</string>
+    <string name="points_value">1,240 QB</string>
+    <string name="redeem_rewards">Redeem Rewards</string>
+
+    <!-- Restaurant Screen -->
+    <string name="restaurant_name_artisan">Artisan Pizza Hub</string>
+    <string name="category_italian_gourmet">Italian • Gourmet Pizza</string>
+    <string name="rating_4_8">4.8</string>
+    <string name="reviews_500_plus">(500+ reviews)</string>
+    <string name="delivery_label">DELIVERY</string>
+    <string name="fee_label">FEE</string>
+    <string name="distance_label">DISTANCE</string>
+    <string name="delivery_time_20_30">20-30 min</string>
+    <string name="delivery_fee_099">$0.99</string>
+    <string name="distance_1_2_km">1.2 km</string>
+
+    <!-- Categories -->
+    <string name="category_best_sellers">Best Sellers</string>
+    <string name="category_specialty_pizza">Specialty Pizza</string>
+    <string name="category_sides">Sides</string>
+    <string name="category_beverages">Beverages</string>
+    <string name="category_combos">Combos</string>
+    <string name="category_desserts">Desserts</string>
+    <string name="section_best_sellers">Best Sellers</string>
+
+    <!-- Menu Items -->
+    <string name="food_margherita">Margherita Classica</string>
+    <string name="food_spicy_diavola">Spicy Diavola</string>
+    <string name="food_truffle_mushroom">Truffle Mushroom</string>
+    <string name="description_margherita">San Marzano tomatoes, fresh buffalo mozzarella, basil, EVOO.</string>
+    <string name="description_diavola">Spicy salami, chili flakes, red onions, and hot honey drizzle.</string>
+    <string name="description_truffle">Wild forest mushrooms, black truffle oil, and ricotta cream.</string>
+    <string name="price_14_00">$14.00</string>
+    <string name="price_18_50">$18.50</string>
+    <string name="price_21_00">$21.00</string>
+    <string name="rating_4_9_120">4.9 (120)</string>
+    <string name="rating_4_7_85">4.7 (85)</string>
+    <string name="rating_4_9_210">4.9 (210)</string>
+
+    <!-- Veg/Non-Veg Labels -->
+    <string name="veg_label">VEG</string>
+    <string name="non_veg_label">NON-VEG</string>
+
+    <!-- Actions -->
+    <string name="add_button">ADD</string>
+    <string name="view_cart_with_items">2 ITEMS • View Cart</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_orders">Orders</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_dashboard_icon">Dashboard icon</string>
+    <string name="cd_settings_button">Settings</string>
+    <string name="cd_cart_button">Shopping cart</string>
+    <string name="cd_search_icon">Search</string>
+    <string name="cd_food_icon">Food item icon</string>
+    <string name="cd_kitchen_icon">Kitchen icon</string>
+    <string name="cd_widget_controls">Widget controls</string>
+    <string name="cd_view_toggle">View toggle</string>
+    <string name="cd_restaurant_hero_image">Restaurant hero image</string>
+    <string name="cd_restaurant_logo">Restaurant logo</string>
+    <string name="cd_rating_star">Rating star</string>
+    <string name="cd_veg_indicator">Vegetarian indicator</string>
+    <string name="cd_non_veg_indicator">Non-vegetarian indicator</string>
+    <string name="cd_food_image">Food image</string>
+    <string name="cd_favorite_button">Add to favorites</string>
+    <string name="cd_share_button">Share restaurant</string>
+    <string name="cd_back_button">Navigate back</string>
+
+    <!-- Checkout Screen -->
+    <string name="checkout">Checkout</string>
+    <string name="order_summary">Order Summary</string>
+    <string name="three_items">3 Items</string>
+    <string name="promo_code">Promo Code</string>
+    <string name="enter_coupon_code">Enter coupon code</string>
+    <string name="apply">Apply</string>
+    <string name="payment_method">Payment Method</string>
+    <string name="credit_debit_card">Credit / Debit Card</string>
+    <string name="payment_card_subtitle">Visa, Mastercard, Amex</string>
+    <string name="cash_on_delivery">Cash on Delivery</string>
+    <string name="payment_cash_subtitle">Pay when you receive your food</string>
+    <string name="subtotal">Subtotal</string>
+    <string name="str_delivery_fee">Delivery Fee</string>
+    <string name="discount">Discount</string>
+    <string name="total_amount">Total Amount</string>
+    <string name="price_2_00">$2.00</string>
+    <string name="price_20_50">$20.50</string>
+    <string name="price_minus_0_00">-$0.00</string>
+    <string name="place_order">Place Order</string>
+    <string name="navigate_back">Navigate back</string>
+    <string name="promo_icon">Promo code icon</string>
+    <string name="product_image">Product image</string>
+
+    <!-- Order Items (Hardcoded Data) -->
+    <string name="item_gourmet_burger">Gourmet Burger</string>
+    <string name="item_burger_customization">Extra cheese, No onions</string>
+    <string name="item_burger_price">$12.00</string>
+    <string name="item_large_fries">Large Fries</string>
+    <string name="item_fries_customization">Sea Salt</string>
+    <string name="item_fries_price">$4.00</string>
+    <string name="item_iced_drink">Iced Drink</string>
+    <string name="item_drink_customization">Large, Zero Sugar</string>
+    <string name="item_drink_price">$2.50</string>
+    <string name="quantity_one">1</string>
+
+    <!-- Order History Screen -->
+    <string name="order_history">Order History</string>
+    <string name="search">Search</string>
+    <string name="all_orders">All Orders</string>
+    <string name="completed">Completed</string>
+    <string name="cancelled">Cancelled</string>
+    <string name="past_orders">Past Orders</string>
+    <string name="date">Date</string>
+    <string name="restaurant">Restaurant</string>
+    <string name="total">Total</string>
+    <string name="quick_summary">Quick Summary</string>
+    <string name="monthly_total">Monthly Total</string>
+    <string name="total_orders">Total Orders</string>
+    <string name="price_154_15">$154.15</string>
+    <string name="count_12">12</string>
+
+    <!-- Order History Items (Hardcoded) -->
+    <string name="order_date_1">Oct 24, 2023</string>
+    <string name="order_restaurant_1">Artisan Pizza Hub</string>
+    <string name="order_details_1">3 items • Delivered</string>
+    <string name="order_total_1">$42.50</string>
+
+    <string name="order_date_2">Oct 20, 2023</string>
+    <string name="order_restaurant_2">QuickBite Burgers</string>
+    <string name="order_details_2">1 item • Delivered</string>
+    <string name="order_total_2">$18.90</string>
+
+    <string name="order_date_3">Oct 15, 2023</string>
+    <string name="order_restaurant_3">Sushi Express</string>
+    <string name="order_details_3">5 items • Delivered</string>
+    <string name="order_total_3">$55.00</string>
+
+    <string name="order_date_4">Oct 12, 2023</string>
+    <string name="order_restaurant_4">Taco Fiesta</string>
+    <string name="order_details_4">2 items • Delivered</string>
+    <string name="order_total_4">$22.45</string>
+
+    <string name="order_date_5">Oct 05, 2023</string>
+    <string name="order_restaurant_5">Green Salad Co.</string>
+    <string name="order_details_5">1 item • Delivered</string>
+    <string name="order_total_5">$15.30</string>
+
+    <!-- Fragment strings -->
+    <string name="dashboard_widgets">Dashboard Widgets</string>
+    <string name="quick_reorder">Quick Reorder</string>
+    <string name="active_kitchens">Active Kitchens</string>
+    <string name="nearby_restaurants">NEARBY RESTAURANTS</string>
+    <string name="favorite_orders_subtitle">Your favorite orders, one tap away</string>
+    <string name="coming_soon">Coming Soon</string>
+    <string name="view_full_history">View Full History</string>
+    <string name="past_orders_subtitle">Your past orders will appear here</string>
+    <string name="emoji_search">🔍</string>
+    <string name="emoji_history">📋</string>
+    <string name="emoji_profile">👤</string>
+
+    <!-- Profile Screen -->
+    <string name="my_profile">My Profile</string>
+    <string name="profile_name">Johnathan Doe</string>
+    <string name="profile_email">john.doe@quickbite.com</string>
+    <string name="stat_orders">24</string>
+    <string name="stat_orders_label">Orders</string>
+    <string name="stat_points">1.2k</string>
+    <string name="stat_points_label">Points</string>
+    <string name="stat_coupons">8</string>
+    <string name="stat_coupons_label">Coupons</string>
+
+    <!-- Account Settings -->
+    <string name="account_settings">Account Settings</string>
+    <string name="personal_information">Personal Information</string>
+    <string name="manage_addresses">Manage Addresses</string>
+    <string name="payment_methods_menu">Payment Methods</string>
+
+    <!-- Preferences -->
+    <string name="preferences">Preferences</string>
+    <string name="push_notifications">Push Notifications</string>
+    <string name="push_notifications_subtitle">Daily offers and order status</string>
+    <string name="language">Language</string>
+    <string name="language_value">English</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="sign_out">Sign Out</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_profile_picture">Profile picture</string>
+    <string name="cd_edit_profile">Edit profile</string>
+    <string name="cd_settings">Settings</string>
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

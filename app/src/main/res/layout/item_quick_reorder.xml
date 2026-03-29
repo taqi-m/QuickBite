@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Quick Reorder Item Layout -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="@dimen/reorder_item_size"
+    android:layout_height="@dimen/quick_reorder_item_height"
+    android:layout_marginEnd="@dimen/spacing_md"
+    android:background="@drawable/selector_quick_reorder_item"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:clickable="true"
+    android:focusable="true"
+    android:padding="@dimen/spacing_sm">
+
+    <!-- Food Icon Container -->
+    <FrameLayout
+        android:layout_width="@dimen/quick_reorder_icon_size"
+        android:layout_height="@dimen/quick_reorder_icon_size"
+        android:layout_marginBottom="@dimen/spacing_sm">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_chip" />
+
+        <!-- Food Icon (using emoji as XML drawable) -->
+        <ImageView
+            android:id="@+id/tv_food_icon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:src="@drawable/ic_lunch_dining_128"
+            app:tint="@color/primary"
+            android:padding="8dp"/>
+    </FrameLayout>
+
+    <!-- Food Name -->
+    <TextView
+        android:id="@+id/tv_food_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Burger Kit"
+        android:textSize="@dimen/text_size_tiny"
+        android:fontFamily="sans-serif-black"
+        android:textColor="@color/md_theme_light_onSurface"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+</LinearLayout>

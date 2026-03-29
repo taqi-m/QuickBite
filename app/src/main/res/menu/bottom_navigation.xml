@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_soup_kitchen_128"
+        android:title="Home"
+        android:enabled="true" />
+
+    <item
+        android:id="@+id/nav_search"
+        android:icon="@drawable/ic_search_128"
+        android:title="Search"
+        android:enabled="true" />
+
+    <!-- Placeholder for FAB -->
+    <item
+        android:id="@+id/nav_placeholder"
+        android:title=""
+        android:enabled="false"
+        android:visible="false" />
+
+    <item
+        android:id="@+id/nav_history"
+        android:icon="@drawable/ic_list_128"
+        android:title="History"
+        android:enabled="true" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_person_128"
+        android:title="Profile"
+        android:enabled="true" />
+</menu>

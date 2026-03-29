@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material Design 3 Dark Theme Override -->
+    <color name="md_theme_primary">@color/primary</color>
+    <color name="md_theme_onPrimary">@color/white</color>
+    <color name="md_theme_primaryContainer">@color/primary_dark</color>
+    <color name="md_theme_onPrimaryContainer">#FFDBDB</color>
+    <color name="md_theme_secondary">@color/accent</color>
+    <color name="md_theme_onSecondary">#1C1B1F</color>
+    <color name="md_theme_background">@color/background_dark</color>
+    <color name="md_theme_onBackground">#E6E1E5</color>
+    <color name="md_theme_surface">#1F1F1F</color>
+    <color name="md_theme_onSurface">#E6E1E5</color>
+    <color name="md_theme_surfaceVariant">#49454F</color>
+    <color name="md_theme_onSurfaceVariant">#CAC4D0</color>
+    <color name="md_theme_outline">#938F99</color>
+    <color name="md_theme_shadow">@color/black</color>
+
+    <!-- Widget Dark Theme Colors -->
+    <color name="widget_surface_light">@color/widget_surface_dark</color>
+    <color name="widget_border_light">@color/widget_border_dark</color>
+</resources>

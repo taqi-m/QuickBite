@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/md_theme_background"
+    tools:ignore="HardcodedText,contentDescription"
+    tools:context=".MainActivity">
+
+    <!-- L1: Complex Scrolling - AppBarLayout with Marquee -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
+
+        <!-- Sticky Marquee Notification Bar -->
+        <LinearLayout
+            android:id="@+id/layout_marquee"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/marquee_height"
+            android:background="@color/navy"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_scrollFlags="scroll|enterAlways">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fillViewport="true"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/spacing_lg">
+
+                    <!-- Order Status -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/spacing_xl"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:id="@+id/view_status_indicator"
+                            android:layout_width="8dp"
+                            android:layout_height="8dp"
+                            android:layout_marginEnd="@dimen/spacing_sm"
+                            android:background="@drawable/shape_badge" />
+
+                        <TextView
+                            android:id="@+id/tv_order_status"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-black"
+                            android:letterSpacing="0.1"
+                            android:text="ORDER #4292: PREPARING"
+                            android:textAllCaps="true"
+                            android:textColor="@color/white"
+                            android:textSize="@dimen/text_size_micro" />
+                    </LinearLayout>
+
+                    <!-- Delivery Info -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/spacing_xl"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="@string/delivery_icon"
+                            android:src="@drawable/ic_local_shipping_128"
+                            app:tint="@color/white" />
+
+                        <TextView
+                            android:id="@+id/tv_delivery_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-black"
+                            android:text=" EST. ARRIVAL: 12:45 PM"
+                            android:textAllCaps="true"
+                            android:textColor="#99FFFFFF"
+                            android:textSize="@dimen/text_size_micro" />
+                    </LinearLayout>
+
+                    <!-- Driver Location -->
+                    <TextView
+                        android:id="@+id/tv_driver_location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-black"
+                        android:text="📍 DRIVER: 0.8KM AWAY"
+                        android:textAllCaps="true"
+                        android:textColor="#99FFFFFF"
+                        android:textSize="@dimen/text_size_micro" />
+                </LinearLayout>
+            </HorizontalScrollView>
+        </LinearLayout>
+
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content - ViewPager2 for Fragment Navigation -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+    
+    <!-- L5: Overlay UI - Bottom Navigation with FAB -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_nav_height"
+        android:layout_gravity="bottom"
+        android:background="@color/md_theme_light_surface"
+        app:elevation="@dimen/elevation_bottom_nav"
+        app:menu="@menu/bottom_navigation" />
+</LinearLayout>

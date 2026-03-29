@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L4: RelativeLayout for horizontal alignment of item components -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_margin="@dimen/spacing_sm"
+    android:gravity="center_vertical"
+    android:background="@drawable/bg_checkout_item"
+    android:padding="@dimen/spacing_md">
+
+    <!-- Product Image -->
+    <ImageView
+        android:id="@+id/iv_product_image"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@drawable/bg_food_image"
+        android:contentDescription="@string/cd_food_image"
+        android:scaleType="centerCrop"
+        tools:src="@drawable/img_burger" />
+
+    <!-- Product Details Container -->
+    <LinearLayout
+        android:id="@+id/ll_product_details"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_lg"
+        android:layout_marginEnd="@dimen/spacing_sm"
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+
+        <!-- Product Name -->
+        <TextView
+            android:id="@+id/tv_product_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-black"
+            android:maxLines="1"
+            android:textColor="@color/navy"
+            android:textSize="16sp"
+            tools:text="Gourmet Burger" />
+
+        <!-- Product Customization -->
+        <TextView
+            android:id="@+id/tv_product_customization"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif"
+            android:maxLines="1"
+            android:textColor="@color/grey_text"
+            android:textSize="@dimen/text_size_body"
+            tools:text="Extra cheese, No onions" />
+
+        <!-- Product Price -->
+        <TextView
+            android:id="@+id/tv_product_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif-black"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/text_size_subhead"
+            tools:text="$12.00" />
+    </LinearLayout>
+
+    <!-- Quantity Badge -->
+    <TextView
+        android:id="@+id/tv_quantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_quantity_badge"
+        android:fontFamily="sans-serif-medium"
+        android:minWidth="40dp"
+        android:paddingHorizontal="@dimen/spacing_md"
+        android:paddingVertical="@dimen/spacing_sm"
+        android:textAlignment="center"
+        android:textColor="@color/grey_text"
+        android:textSize="@dimen/text_size_body"
+        tools:text="1" />
+
+</LinearLayout>
+
+
