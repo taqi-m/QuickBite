@@ -1,5 +1,19 @@
 <resources>
     <string name="app_name">QuickBite</string>
+    <string name="placeholder_empty">--</string>
+
+    <!-- Assignment 02 -->
+    <string name="login_title">QuickBite Login</string>
+    <string name="login_subtitle">Enter your name to continue</string>
+    <string name="name_hint">Your Name</string>
+    <string name="continue_label">Continue</string>
+    <string name="enter_name_prompt">Please enter your name</string>
+    <string name="welcome_template">Welcome, %1$s</string>
+    <string name="personalized_dashboard_upper">PERSONALIZED DASHBOARD</string>
+    <string name="detail_default_title">Product Details</string>
+    <string name="detail_default_subtitle">Select a product from Home to view details</string>
+    <string name="detail_rating_placeholder">Rating:</string>
+    <string name="detail_rating_template">Rating: %1$s</string>
 
     <!-- Command Center -->
     <string name="command_center_title">Command Center</string>
@@ -93,6 +107,7 @@
     <!-- Actions -->
     <string name="add_button">ADD</string>
     <string name="view_cart_with_items">2 ITEMS • View Cart</string>
+    <string name="view_cart_dynamic">%1$d ITEMS • View Cart</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
@@ -123,6 +138,7 @@
     <string name="checkout">Checkout</string>
     <string name="order_summary">Order Summary</string>
     <string name="three_items">3 Items</string>
+    <string name="items_count_template">%1$d Items</string>
     <string name="promo_code">Promo Code</string>
     <string name="enter_coupon_code">Enter coupon code</string>
     <string name="apply">Apply</string>
@@ -139,6 +155,8 @@
     <string name="price_20_50">$20.50</string>
     <string name="price_minus_0_00">-$0.00</string>
     <string name="place_order">Place Order</string>
+    <string name="cart_empty_message">Your cart is empty</string>
+    <string name="order_placed_message">Order placed successfully!</string>
     <string name="navigate_back">Navigate back</string>
     <string name="promo_icon">Promo code icon</string>
     <string name="product_image">Product image</string>

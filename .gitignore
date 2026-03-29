@@ -15,3 +15,12 @@
 .cxx
 local.properties
 /html-designs
+
+# Non-project and local scratch files
+*.md
+*.pdf
+*.zip
+*.log
+*.tmp
+*.bak
+

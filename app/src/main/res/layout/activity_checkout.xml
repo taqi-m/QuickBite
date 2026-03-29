@@ -60,6 +60,7 @@
 
             <!-- ORDER SUMMARY SECTION -->
             <RelativeLayout
+                android:id="@+id/layout_order_summary_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_lg">
@@ -84,6 +85,16 @@
                     android:textColor="@color/primary"
                     android:textSize="@dimen/text_size_body" />
             </RelativeLayout>
+
+            <TextView
+                android:id="@+id/tv_cart_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:gravity="center"
+                android:text="@string/cart_empty_message"
+                android:textAppearance="@style/TextAppearance.QuickBite.Body"
+                android:visibility="gone" />
 
             <!-- Order Items -->
             <LinearLayout
@@ -302,6 +313,7 @@
 
             <!-- PRICE BREAKDOWN -->
             <LinearLayout
+                android:id="@+id/layout_price_breakdown"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"

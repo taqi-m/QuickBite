@@ -2,6 +2,8 @@ package com.quick.bite
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -11,13 +13,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
-import com.google.android.material.chip.ChipGroup
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.quick.bite.repositories.DummyRestaurantRepository
+import com.quick.bite.models.Product
+import com.quick.bite.repositories.SessionDataRepository
 
 class RestaurantDetailActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_RESTAURANT_ID = "extra_restaurant_id"
+        const val EXTRA_RESTAURANT_NAME = "extra_restaurant_name"
+        const val EXTRA_RESTAURANT_CATEGORY = "extra_restaurant_category"
+        const val EXTRA_RESTAURANT_RATING = "extra_restaurant_rating"
+    }
+
     // Data Models for Restaurant Screen
     data class MenuItem(
+        val productId: Int,
         val name: String,
         val description: String,
         val price: String,
@@ -39,16 +50,29 @@ class RestaurantDetailActivity : AppCompatActivity() {
         val logoUrl: String?
     )
 
+    private var selectedRestaurantId: Int = 1
+    private var selectedRestaurantName: String = ""
+    private var allProducts: List<Product> = emptyList()
+    private lateinit var menuItemAdapter: MenuItemAdapter
+    private var selectedType: String = ""
+    private val placeholderText = "--"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.restaurant_detail_screen)
 
+        bindRestaurantHeader()
         setupSystemBars()
         setupToolbar()
         setupMenuItems()
         setupCategoryChips()
         setupCartButton()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateCartButtonLabel()
     }
 
     private fun setupSystemBars() {
@@ -72,111 +96,152 @@ class RestaurantDetailActivity : AppCompatActivity() {
     }
 
     private fun setupMenuItems() {
-        val menuItems = createMenuItems()
+        allProducts = DummyRestaurantRepository.getProductsForRestaurant(selectedRestaurantId)
+        val menuItems = mapProductsToMenuItems(allProducts)
         val rvMenuItems = findViewById<RecyclerView>(R.id.rv_menu_items)
 
         rvMenuItems.layoutManager = LinearLayoutManager(this)
-        rvMenuItems.adapter = MenuItemAdapter(menuItems) { menuItem ->
+        menuItemAdapter = MenuItemAdapter(menuItems) { menuItem ->
             // Handle add to cart click
             onAddToCartClicked(menuItem)
         }
+        rvMenuItems.adapter = menuItemAdapter
     }
 
     private fun setupCategoryChips() {
-        val categories = listOf(
-            "Best Sellers" to true,  // selected by default
-            "Specialty Pizza" to false,
-            "Sides" to false,
-            "Beverages" to false,
-            "Combos" to false,
-            "Desserts" to false
+        val availableTypes = allProducts.map { it.type }.distinct()
+        val chipIds = listOf(
+            R.id.chip_best_sellers,
+            R.id.chip_specialty_pizza,
+            R.id.chip_sides,
+            R.id.chip_beverages,
+            R.id.chip_combos,
+            R.id.chip_desserts
         )
 
-        // Set click listeners for category chips
-        categories.forEachIndexed { index, (category, isSelected) ->
-            val chipId = when (index) {
-                0 -> R.id.chip_best_sellers
-                1 -> R.id.chip_specialty_pizza
-                2 -> R.id.chip_sides
-                3 -> R.id.chip_beverages
-                4 -> R.id.chip_combos
-                5 -> R.id.chip_desserts
-                else -> return@forEachIndexed
+        chipIds.forEachIndexed { index, chipId ->
+            val chip = findViewById<Chip>(chipId)
+            val type = availableTypes.getOrNull(index)
+
+            if (chip == null || type == null) {
+                chip?.visibility = View.GONE
+                return@forEachIndexed
             }
 
-            findViewById<Chip>(chipId)?.setOnClickListener {
-                onCategorySelected(category)
-            }
+            chip.visibility = View.VISIBLE
+            chip.text = type
+            chip.isCheckable = true
+            chip.isChecked = false
+            chip.setOnClickListener { onCategorySelected(type) }
+        }
+
+        selectedType = availableTypes.firstOrNull().orEmpty()
+        if (selectedType.isNotBlank()) {
+            onCategorySelected(selectedType)
         }
     }
 
     private fun setupCartButton() {
         val btnViewCart = findViewById<MaterialButton>(R.id.btn_view_cart)
+        updateCartButtonLabel()
 
         btnViewCart?.setOnClickListener {
-            // Navigate to cart screen
             navigateToCart()
         }
     }
 
-    private fun createMenuItems(): List<MenuItem> {
-        return listOf(
+    private fun mapProductsToMenuItems(products: List<Product>): List<MenuItem> {
+        return products.map { product ->
             MenuItem(
-                name = "Margherita Classica",
-                description = "San Marzano tomatoes, fresh buffalo mozzarella, basil, EVOO.",
-                price = "$14.00",
-                rating = "4.9 (120)",
+                productId = product.id,
+                name = product.name,
+                description = product.description,
+                price = product.price,
+                rating = product.rating,
                 imageUrl = null,
-                isVeg = true,
-                vegIndicatorDrawable = R.drawable.ic_pentagon_128
-            ),
-            MenuItem(
-                name = "Spicy Diavola",
-                description = "Spicy salami, chili flakes, red onions, and hot honey drizzle.",
-                price = "$18.50",
-                rating = "4.7 (85)",
-                imageUrl = null,
-                isVeg = false,
-                vegIndicatorDrawable = R.drawable.ic_square_128
-            ),
-            MenuItem(
-                name = "Truffle Mushroom",
-                description = "Wild forest mushrooms, black truffle oil, and ricotta cream.",
-                price = "$21.00",
-                rating = "4.9 (210)",
-                imageUrl = null,
-                isVeg = true,
-                vegIndicatorDrawable = R.drawable.ic_pentagon_128
+                isVeg = product.isVeg,
+                vegIndicatorDrawable = if (product.isVeg) R.drawable.ic_pentagon_128 else R.drawable.ic_square_128
             )
-        )
+        }
+    }
+
+    private fun bindRestaurantHeader() {
+        selectedRestaurantId = intent.getIntExtra(EXTRA_RESTAURANT_ID, 1)
+
+        val name = intent.getStringExtra(EXTRA_RESTAURANT_NAME)
+        val category = intent.getStringExtra(EXTRA_RESTAURANT_CATEGORY)
+        val rating = intent.getStringExtra(EXTRA_RESTAURANT_RATING)
+
+        selectedRestaurantName = name?.trim().orEmpty()
+
+        findViewById<TextView>(R.id.tv_restaurant_name)?.text =
+            selectedRestaurantName.ifBlank { placeholderText }
+        findViewById<TextView>(R.id.tv_restaurant_category)?.text =
+            category?.trim().orEmpty().ifBlank { placeholderText }
+        findViewById<TextView>(R.id.tv_restaurant_rating)?.text =
+            rating?.trim().orEmpty().ifBlank { placeholderText }
     }
 
     private fun onCategorySelected(category: String) {
-        // Handle category selection
-        // Filter menu items based on selected category
-        // Update RecyclerView with filtered items
+        selectedType = category
+        updateChipSelectionState()
+
+        val filteredProducts = allProducts.filter { it.type.equals(selectedType, ignoreCase = true) }
+        val productsToShow = if (filteredProducts.isEmpty()) allProducts else filteredProducts
+        menuItemAdapter.updateItems(mapProductsToMenuItems(productsToShow))
+    }
+
+    private fun updateChipSelectionState() {
+        val chipIds = listOf(
+            R.id.chip_best_sellers,
+            R.id.chip_specialty_pizza,
+            R.id.chip_sides,
+            R.id.chip_beverages,
+            R.id.chip_combos,
+            R.id.chip_desserts
+        )
+
+        chipIds.forEach { chipId ->
+            findViewById<Chip>(chipId)?.let { chip ->
+                chip.isChecked = chip.visibility == View.VISIBLE && chip.text.toString() == selectedType
+            }
+        }
     }
 
     private fun onAddToCartClicked(menuItem: MenuItem) {
-        // Handle add to cart action
-        // Update cart badge count
-        // Show success animation or snackbar
+        val selectedProduct = allProducts.firstOrNull { it.id == menuItem.productId } ?: return
+        SessionDataRepository.addToCart(selectedProduct, selectedRestaurantName)
+        updateCartButtonLabel()
     }
 
     private fun navigateToCart() {
-        // Navigate to cart screen
-        // Intent to CartActivity or show bottom sheet
+        val intent = android.content.Intent(this, com.quick.bite.ui.checkout.CheckoutActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun updateCartButtonLabel() {
+        val btnViewCart = findViewById<MaterialButton>(R.id.btn_view_cart) ?: return
+        val itemCount = SessionDataRepository.getCartItemCount()
+        btnViewCart.text = "$itemCount ITEMS • View Cart"
     }
 }
 
 // Simple RecyclerView Adapter for Menu Items
 class MenuItemAdapter(
-    private val menuItems: List<RestaurantDetailActivity.MenuItem>,
+    menuItems: List<RestaurantDetailActivity.MenuItem>,
     private val onAddToCart: (RestaurantDetailActivity.MenuItem) -> Unit
 ) : RecyclerView.Adapter<MenuItemAdapter.ViewHolder>() {
 
+    private val visibleItems = menuItems.toMutableList()
+
     class ViewHolder(view: android.view.View) : RecyclerView.ViewHolder(view) {
-        // ViewHolder implementation would bind menu item data to views
+        val vegIndicator: android.widget.ImageView = view.findViewById(R.id.iv_veg_indicator)
+        val vegLabel: TextView = view.findViewById(R.id.tv_veg_label)
+        val name: TextView = view.findViewById(R.id.tv_food_name)
+        val description: TextView = view.findViewById(R.id.tv_food_description)
+        val price: TextView = view.findViewById(R.id.tv_food_price)
+        val rating: TextView = view.findViewById(R.id.tv_food_rating)
+        val addButton: MaterialButton = view.findViewById(R.id.btn_add_to_cart)
     }
 
     override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): ViewHolder {
@@ -186,10 +251,26 @@ class MenuItemAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val menuItem = menuItems[position]
-        // Bind menu item data to views
-        // Set click listener for add button: onAddToCart(menuItem)
+        val menuItem = visibleItems[position]
+
+        holder.vegIndicator.setImageResource(menuItem.vegIndicatorDrawable)
+        holder.vegLabel.text = if (menuItem.isVeg) {
+            holder.itemView.context.getString(R.string.veg_label)
+        } else {
+            holder.itemView.context.getString(R.string.non_veg_label)
+        }
+        holder.name.text = menuItem.name
+        holder.description.text = menuItem.description
+        holder.price.text = menuItem.price
+        holder.rating.text = menuItem.rating
+        holder.addButton.setOnClickListener { onAddToCart(menuItem) }
     }
 
-    override fun getItemCount() = menuItems.size
+    override fun getItemCount() = visibleItems.size
+
+    fun updateItems(newItems: List<RestaurantDetailActivity.MenuItem>) {
+        visibleItems.clear()
+        visibleItems.addAll(newItems)
+        notifyDataSetChanged()
+    }
 }

@@ -11,18 +11,20 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
-import com.quick.bite.adapters.MainPagerAdapter
-import com.quick.bite.ui.checkout.CheckoutActivity
-import com.quick.bite.ui.history.OrderHistoryActivity
-import androidx.core.view.get
+import com.quick.bite.ui.fragments.HistoryFragment
+import com.quick.bite.ui.fragments.HomeFragment
+import com.quick.bite.ui.fragments.ProfileFragment
+import com.quick.bite.ui.fragments.SearchFragment
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val EXTRA_USER_NAME = "extra_user_name"
+        const val EXTRA_WELCOME_MESSAGE = "extra_welcome_message"
+    }
 
     // Dashboard Widget Data Models
     data class DashboardWidget(
@@ -47,17 +49,32 @@ class MainActivity : AppCompatActivity() {
         val deliveryFee: String
     )
 
-    private lateinit var viewPager: ViewPager2
     private lateinit var bottomNavigation: BottomNavigationView
+    private var userName: String = ""
+    private var welcomeMessage: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
+        readIntentExtras()
         setupSystemBars()
-        setupViewPager()
         setupBottomNavigation()
+
+        if (savedInstanceState == null) {
+            openHomeFragment()
+        }
+    }
+
+    private fun readIntentExtras() {
+        userName = intent.getStringExtra(EXTRA_USER_NAME).orEmpty()
+        welcomeMessage = intent.getStringExtra(EXTRA_WELCOME_MESSAGE).orEmpty()
+
+        val statusView = findViewById<TextView>(R.id.tv_order_status)
+        if (welcomeMessage.isNotBlank()) {
+            statusView.text = welcomeMessage
+        }
     }
 
     private fun setupSystemBars() {
@@ -68,43 +85,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupViewPager() {
-        viewPager = findViewById(R.id.view_pager)
-        val adapter = MainPagerAdapter(this)
-        viewPager.adapter = adapter
-
-        // Disable user swipe to prevent conflicts with bottom navigation
-        viewPager.isUserInputEnabled = true
-
-        // Register page change callback to sync with bottom navigation
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                super.onPageSelected(position)
-                // Update bottom navigation selection based on ViewPager position
-                bottomNavigation.menu[getMenuPosition(position)].isChecked = true
-            }
-        })
-    }
-
     private fun setupBottomNavigation() {
         bottomNavigation = findViewById(R.id.bottom_navigation)
 
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    viewPager.currentItem = MainPagerAdapter.HOME_POSITION
+                    openHomeFragment()
                     true
                 }
                 R.id.nav_search -> {
-                    viewPager.currentItem = MainPagerAdapter.SEARCH_POSITION
+                    openSearchFragment()
                     true
                 }
                 R.id.nav_history -> {
-                    viewPager.currentItem = MainPagerAdapter.HISTORY_POSITION
+                    openHistoryFragment()
                     true
                 }
                 R.id.nav_profile -> {
-                    viewPager.currentItem = MainPagerAdapter.PROFILE_POSITION
+                    openProfileFragment()
                     true
                 }
                 else -> false
@@ -112,19 +111,32 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Maps ViewPager position to bottom navigation menu position
-     * (accounting for the placeholder item at position 2)
-     */
-    private fun getMenuPosition(viewPagerPosition: Int): Int {
-        return when (viewPagerPosition) {
-            MainPagerAdapter.HOME_POSITION -> 0
-            MainPagerAdapter.SEARCH_POSITION -> 1
-            MainPagerAdapter.HISTORY_POSITION -> 3  // Skip placeholder at position 2
-            MainPagerAdapter.PROFILE_POSITION -> 4
-            else -> 0
-        }
+    private fun openHomeFragment() {
+        val homeFragment = HomeFragment.newInstance(userName, welcomeMessage)
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, homeFragment)
+            .commit()
     }
+
+    private fun openSearchFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, SearchFragment())
+            .commit()
+    }
+
+    private fun openHistoryFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, HistoryFragment())
+            .commit()
+    }
+
+    private fun openProfileFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, ProfileFragment())
+            .commit()
+    }
+
 }
 
 // Simple RecyclerView Adapters for demo purposes

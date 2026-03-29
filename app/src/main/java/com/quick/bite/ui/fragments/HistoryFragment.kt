@@ -6,26 +6,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.quick.bite.R
+import com.quick.bite.repositories.SessionDataRepository
 
 class HistoryFragment : Fragment() {
     private data class UiRefs(
-        val tabAllOrders: View,
-        val tabCompleted: View,
-        val tabCancelled: View,
-        val tvTabAll: TextView,
-        val tvTabCompleted: TextView,
-        val tvTabCancelled: TextView,
-        val indicatorAll: View,
-        val indicatorCompleted: View,
-        val indicatorCancelled: View,
         val order1: View,
         val order2: View,
         val order3: View,
         val order4: View,
-        val order5: View
+        val order5: View,
+        val monthlyTotal: TextView,
+        val totalOrders: TextView
     )
 
     private var ui: UiRefs? = null
@@ -41,67 +34,42 @@ class HistoryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         ui = UiRefs(
-            tabAllOrders = view.findViewById(R.id.tab_all_orders),
-            tabCompleted = view.findViewById(R.id.tab_completed),
-            tabCancelled = view.findViewById(R.id.tab_cancelled),
-            tvTabAll = view.findViewById(R.id.tv_tab_all),
-            tvTabCompleted = view.findViewById(R.id.tv_tab_completed),
-            tvTabCancelled = view.findViewById(R.id.tv_tab_cancelled),
-            indicatorAll = view.findViewById(R.id.indicator_all),
-            indicatorCompleted = view.findViewById(R.id.indicator_completed),
-            indicatorCancelled = view.findViewById(R.id.indicator_cancelled),
             order1 = view.findViewById(R.id.order_1),
             order2 = view.findViewById(R.id.order_2),
             order3 = view.findViewById(R.id.order_3),
             order4 = view.findViewById(R.id.order_4),
-            order5 = view.findViewById(R.id.order_5)
+            order5 = view.findViewById(R.id.order_5),
+            monthlyTotal = view.findViewById(R.id.tv_monthly_total),
+            totalOrders = view.findViewById(R.id.tv_total_orders)
         )
         setupOrderData()
-        setupClickListeners()
     }
 
     private fun setupOrderData() {
         val ui = ui ?: return
 
-        setupOrderItem(
-            ui.order1,
-            getString(R.string.order_date_1),
-            getString(R.string.order_restaurant_1),
-            getString(R.string.order_details_1),
-            getString(R.string.order_total_1)
-        )
+        val displayOrders = SessionDataRepository.getOrderLogs().take(5)
+        val orderViews = listOf(ui.order1, ui.order2, ui.order3, ui.order4, ui.order5)
 
-        setupOrderItem(
-            ui.order2,
-            getString(R.string.order_date_2),
-            getString(R.string.order_restaurant_2),
-            getString(R.string.order_details_2),
-            getString(R.string.order_total_2)
-        )
+        orderViews.forEachIndexed { index, orderView ->
+            val order = displayOrders.getOrNull(index)
+            if (order == null) {
+                setupOrderItem(
+                    orderView,
+                    getString(R.string.placeholder_empty),
+                    getString(R.string.placeholder_empty),
+                    getString(R.string.placeholder_empty),
+                    getString(R.string.placeholder_empty)
+                )
+            } else {
+                setupOrderItem(orderView, order.date, order.restaurantName, order.details, order.total)
+            }
+        }
 
-        setupOrderItem(
-            ui.order3,
-            getString(R.string.order_date_3),
-            getString(R.string.order_restaurant_3),
-            getString(R.string.order_details_3),
-            getString(R.string.order_total_3)
-        )
-
-        setupOrderItem(
-            ui.order4,
-            getString(R.string.order_date_4),
-            getString(R.string.order_restaurant_4),
-            getString(R.string.order_details_4),
-            getString(R.string.order_total_4)
-        )
-
-        setupOrderItem(
-            ui.order5,
-            getString(R.string.order_date_5),
-            getString(R.string.order_restaurant_5),
-            getString(R.string.order_details_5),
-            getString(R.string.order_total_5)
-        )
+        val allOrders = SessionDataRepository.getOrderLogs()
+        val totalAmount = allOrders.sumOf { parseMoney(it.total) }
+        ui.monthlyTotal.text = SessionDataRepository.formatMoney(totalAmount)
+        ui.totalOrders.text = allOrders.size.toString()
     }
 
     private fun setupOrderItem(
@@ -121,40 +89,8 @@ class HistoryFragment : Fragment() {
         }
     }
 
-    private fun setupClickListeners() {
-        val ui = ui ?: return
-        ui.tabAllOrders.setOnClickListener { selectTab(0) }
-        ui.tabCompleted.setOnClickListener { selectTab(1) }
-        ui.tabCancelled.setOnClickListener { selectTab(2) }
-    }
-
-    private fun selectTab(tabIndex: Int) {
-        val ui = ui ?: return
-        val grey = ContextCompat.getColor(requireContext(), R.color.grey_text)
-        val primary = ContextCompat.getColor(requireContext(), R.color.primary)
-
-        ui.tvTabAll.setTextColor(grey)
-        ui.tvTabCompleted.setTextColor(grey)
-        ui.tvTabCancelled.setTextColor(grey)
-
-        ui.indicatorAll.visibility = View.INVISIBLE
-        ui.indicatorCompleted.visibility = View.INVISIBLE
-        ui.indicatorCancelled.visibility = View.INVISIBLE
-
-        when (tabIndex) {
-            0 -> {
-                ui.tvTabAll.setTextColor(primary)
-                ui.indicatorAll.visibility = View.VISIBLE
-            }
-            1 -> {
-                ui.tvTabCompleted.setTextColor(primary)
-                ui.indicatorCompleted.visibility = View.VISIBLE
-            }
-            2 -> {
-                ui.tvTabCancelled.setTextColor(primary)
-                ui.indicatorCancelled.visibility = View.VISIBLE
-            }
-        }
+    private fun parseMoney(value: String): Double {
+        return value.replace("$", "").trim().toDoubleOrNull() ?: 0.0
     }
 
     override fun onDestroyView() {

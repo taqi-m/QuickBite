@@ -2,51 +2,78 @@ package com.quick.bite.ui.fragments
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
-import com.quick.bite.ActiveKitchenAdapter
 import com.quick.bite.DashboardWidgetAdapter
-import com.quick.bite.MainActivity
 import com.quick.bite.R
+import com.quick.bite.RestaurantDetailActivity
+import com.quick.bite.adapters.RestaurantAdapter
+import com.quick.bite.models.Restaurant
+import com.quick.bite.repositories.DummyDashboardRepository
+import com.quick.bite.repositories.DummyRestaurantRepository
 import com.quick.bite.ui.checkout.CheckoutActivity
-import com.quick.bite.ui.history.OrderHistoryActivity
 
 class HomeFragment : Fragment() {
+
+    companion object {
+        private const val ARG_USER_NAME = "arg_user_name"
+        private const val ARG_WELCOME_MESSAGE = "arg_welcome_message"
+
+        fun newInstance(userName: String, welcomeMessage: String): HomeFragment {
+            return HomeFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_USER_NAME, userName)
+                    putString(ARG_WELCOME_MESSAGE, welcomeMessage)
+                }
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        showWelcomeMessage(view)
         setupDashboardWidgets(view)
-        setupActiveKitchens(view)
-        setupClickListeners(view)
+        setupRestaurantList(view)
         setupCartButton(view)
     }
 
+    private fun showWelcomeMessage(view: View) {
+        val subtitle = view.findViewById<TextView>(R.id.tv_dashboard_subtitle)
+        val userName = arguments?.getString(ARG_USER_NAME).orEmpty()
+        val welcome = arguments?.getString(ARG_WELCOME_MESSAGE).orEmpty()
+
+        subtitle.text = when {
+            welcome.isNotBlank() -> welcome
+            userName.isNotBlank() -> getString(R.string.welcome_template, userName)
+            else -> getString(R.string.placeholder_empty)
+        }
+    }
 
     private fun setupDashboardWidgets(view: View) {
-        val dashboardWidgets = createDashboardWidgets()
+        val dashboardWidgets = DummyDashboardRepository.getDashboardWidgets()
         val rvDashboard = view.findViewById<RecyclerView>(R.id.rv_dashboard_widgets)
 
-        // Grid Layout System for dashboard widgets
         val gridLayoutManager = GridLayoutManager(requireContext(), 2)
         gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                // Live Promotions widget spans 2 columns (featured)
                 return if (position == 0) 2 else 1
             }
         }
@@ -55,55 +82,27 @@ class HomeFragment : Fragment() {
         rvDashboard.adapter = DashboardWidgetAdapter(dashboardWidgets)
     }
 
-    private fun setupActiveKitchens(view: View) {
-        val activeKitchens = createActiveKitchens()
+    private fun setupRestaurantList(view: View) {
+        val restaurants = DummyRestaurantRepository.getRestaurants()
         val rvKitchens = view.findViewById<RecyclerView>(R.id.rv_active_kitchens)
+        val searchInput = view.findViewById<EditText>(R.id.et_command_search)
+
+        val adapter = RestaurantAdapter(restaurants) { selectedRestaurant ->
+            openRestaurantDetail(selectedRestaurant)
+        }
 
         rvKitchens.layoutManager = LinearLayoutManager(requireContext())
-        rvKitchens.adapter = ActiveKitchenAdapter(activeKitchens)
-    }
+        rvKitchens.adapter = adapter
 
-    private fun setupClickListeners(view: View) {
-        // Setup manage reorder button to navigate to Order History
-        /*view.findViewById<Button>(R.id.btn_manage_reorder)?.setOnClickListener {
-            val intent = Intent(requireContext(), OrderHistoryActivity::class.java)
-            startActivity(intent)
-        }*/
-    }
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
 
-    private fun createDashboardWidgets(): List<MainActivity.DashboardWidget> {
-        return listOf(
-            MainActivity.DashboardWidget(
-                icon = "🔥",
-                title = "Live Promotions",
-                mainText = "50% OFF",
-                subText = "Burgers & Wings • Ends in 2h",
-                actionText = "CLAIM",
-                backgroundType = MainActivity.WidgetBackgroundType.GRADIENT
-            ),
-            /*MainActivity.DashboardWidget(
-                icon = "📂",
-                title = "My Flavors",
-                mainText = "Healthy",
-                subText = "Asian, +2 more",
-                actionText = ""
-            ),
-            MainActivity.DashboardWidget(
-                icon = "❤️",
-                title = "Nearby Gems",
-                mainText = "Morning Harvest",
-                subText = "1.2 km away",
-                actionText = ""
-            ),
-            MainActivity.DashboardWidget(
-                icon = "📊",
-                title = "Consumption Metrics",
-                mainText = "1,240 QB",
-                subText = "Points Earned",
-                actionText = "REDEEM REWARDS",
-                backgroundType = MainActivity.WidgetBackgroundType.DARK
-            )*/
-        )
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                adapter.filter(s?.toString().orEmpty())
+            }
+
+            override fun afterTextChanged(s: Editable?) = Unit
+        })
     }
 
     private fun setupCartButton(view: View) {
@@ -113,25 +112,13 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun createActiveKitchens(): List<MainActivity.ActiveKitchen> {
-        return listOf(
-            MainActivity.ActiveKitchen(
-                icon = "🍜",
-                name = "Umami House",
-                category = "JAPANESE • $$$",
-                rating = "4.9 ★",
-                deliveryTime = "20m",
-                deliveryFee = "FREE"
-            ),
-            MainActivity.ActiveKitchen(
-                icon = "🧁",
-                name = "Sweet Delights",
-                category = "BAKERY • $$",
-                rating = "4.5 ★",
-                deliveryTime = "35m",
-                deliveryFee = "$2.99"
-            )
-        )
+    private fun openRestaurantDetail(restaurant: Restaurant) {
+        val intent = Intent(requireContext(), RestaurantDetailActivity::class.java).apply {
+            putExtra(RestaurantDetailActivity.EXTRA_RESTAURANT_ID, restaurant.id)
+            putExtra(RestaurantDetailActivity.EXTRA_RESTAURANT_NAME, restaurant.name)
+            putExtra(RestaurantDetailActivity.EXTRA_RESTAURANT_CATEGORY, restaurant.category)
+            putExtra(RestaurantDetailActivity.EXTRA_RESTAURANT_RATING, restaurant.rating)
+        }
+        startActivity(intent)
     }
 }
-
