@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.quick.bite.model.ActiveKitchen
+import com.quick.bite.model.others.ActiveKitchen
 import com.quick.bite.R
 
 class ActiveKitchenAdapter(

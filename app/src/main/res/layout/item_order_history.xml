@@ -1,71 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- L7: TableRow for order history item -->
-<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Layout for individual order item in RecyclerView -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
-    android:clickable="true"
-    android:focusable="true"
-    android:paddingTop="@dimen/spacing_lg"
-    android:paddingBottom="@dimen/spacing_lg">
+    android:layout_marginBottom="@dimen/spacing_md"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardUseCompatPadding="true"
+    app:strokeColor="@color/grey_text"
+    app:strokeWidth="1dp">
 
-    <!-- Date Column -->
-    <TextView
-        android:id="@+id/tv_order_date"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.3"
-        android:fontFamily="sans-serif"
-        android:paddingStart="0dp"
-        android:paddingEnd="@dimen/spacing_sm"
-        android:textColor="@color/grey_text"
-        android:textSize="@dimen/text_size_body"
-        tools:text="Oct 24, 2023" />
-
-    <!-- Restaurant Details Column -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.5"
-        android:orientation="vertical"
-        android:paddingStart="0dp"
-        android:paddingEnd="@dimen/spacing_sm">
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_md"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
 
+        <!-- Date Column -->
         <TextView
-            android:id="@+id/tv_restaurant_name"
-            android:layout_width="match_parent"
+            android:id="@+id/tv_order_date"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:fontFamily="sans-serif-medium"
-            android:maxLines="1"
-            android:textColor="@color/navy"
-            android:textSize="@dimen/text_size_body"
-            tools:text="Artisan Pizza Hub" />
-
-        <TextView
-            android:id="@+id/tv_order_details"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
+            android:layout_weight="0.25"
             android:fontFamily="sans-serif"
+            android:paddingEnd="@dimen/spacing_sm"
             android:textColor="@color/grey_text"
-            android:textSize="12sp"
-            tools:text="3 items • Delivered" />
+            android:textSize="@dimen/text_size_body"
+            tools:text="Oct 24, 2023" />
+
+        <!-- Order Details Column -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:orientation="vertical"
+            android:paddingEnd="@dimen/spacing_sm">
+
+            <TextView
+                android:id="@+id/tv_restaurant_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif-medium"
+                android:maxLines="1"
+                android:textColor="@color/navy"
+                android:textSize="@dimen/text_size_body"
+                tools:text="Order #12345" />
+
+            <TextView
+                android:id="@+id/tv_order_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:fontFamily="sans-serif"
+                android:textColor="@color/grey_text"
+                android:textSize="12sp"
+                tools:text="Status: PENDING" />
+
+            <Button
+                android:id="@+id/btn_cancel_order"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
+                android:text="@string/cancel_order"
+                android:textAllCaps="false"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+        </LinearLayout>
+
+        <!-- Total Column -->
+        <TextView
+            android:id="@+id/tv_order_total"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.25"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="end"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/text_size_body"
+            tools:text="$42.50" />
+
     </LinearLayout>
 
-    <!-- Total Column -->
-    <TextView
-        android:id="@+id/tv_order_total"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.2"
-        android:fontFamily="sans-serif-bold"
-        android:gravity="end"
-        android:textColor="@color/primary"
-        android:textSize="@dimen/text_size_body"
-        tools:text="$42.50" />
-</TableRow>
-
-
+</com.google.android.material.card.MaterialCardView>

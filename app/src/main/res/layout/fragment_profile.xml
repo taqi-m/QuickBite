@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Profile Screen: User profile with settings and preferences -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -7,20 +6,17 @@
     android:background="@color/md_theme_light_background"
     android:orientation="vertical">
 
-    <!-- Divider -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/colorDivider" />
 
-    <!-- Scrollable Content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:fillViewport="true">
 
-        <!-- Main Content Container -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,7 +24,6 @@
             android:paddingHorizontal="@dimen/spacing_lg"
             android:paddingTop="@dimen/spacing_xl">
 
-            <!-- Profile Header Card (L4: RelativeLayout with FrameLayout for avatar) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -45,12 +40,10 @@
                     android:orientation="vertical"
                     android:padding="@dimen/spacing_xl">
 
-                    <!-- Profile Avatar with Edit Button (L5: FrameLayout) -->
                     <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content">
 
-                        <!-- Avatar -->
                         <ImageView
                             android:id="@+id/iv_profile_avatar"
                             android:layout_width="@dimen/profile_avatar_size"
@@ -59,21 +52,8 @@
                             android:contentDescription="@string/cd_profile_picture"
                             android:scaleType="centerCrop"
                             android:src="@drawable/img_profile" />
-
-                        <!-- Edit Button -->
-                        <ImageButton
-                            android:id="@+id/btn_edit_profile"
-                            android:layout_width="@dimen/profile_edit_button_size"
-                            android:layout_height="@dimen/profile_edit_button_size"
-                            android:layout_gravity="bottom|end"
-                            android:background="@drawable/bg_edit_button"
-                            android:contentDescription="@string/cd_edit_profile"
-                            android:padding="4dp"
-                            android:src="@drawable/ic_edit_128"
-                            app:tint="@color/white" />
                     </FrameLayout>
 
-                    <!-- User Name -->
                     <TextView
                         android:id="@+id/tv_profile_name"
                         android:layout_width="wrap_content"
@@ -84,132 +64,9 @@
                         android:textColor="@color/navy"
                         android:textSize="24sp" />
 
-                    <!-- Email -->
-                    <TextView
-                        android:id="@+id/tv_profile_email"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_xs"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/profile_email"
-                        android:textColor="@color/grey_text"
-                        android:textSize="@dimen/text_size_body" />
-
-                    <!-- Stats Section (L3: LinearLayout with weightSum) -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_xl"
-                        android:baselineAligned="false"
-                        android:orientation="horizontal"
-                        android:weightSum="3">
-
-                        <!-- Orders Stat -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="@dimen/spacing_sm">
-
-                            <TextView
-                                android:id="@+id/tv_orders_count"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="sans-serif-black"
-                                android:text="@string/stat_orders"
-                                android:textColor="@color/navy"
-                                android:textSize="18sp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_xs"
-                                android:fontFamily="sans-serif-medium"
-                                android:letterSpacing="0.1"
-                                android:text="@string/stat_orders_label"
-                                android:textAllCaps="true"
-                                android:textColor="@color/grey_text"
-                                android:textSize="@dimen/text_size_micro" />
-                        </LinearLayout>
-
-                        <!-- Divider -->
-                        <View
-                            android:layout_width="1dp"
-                            android:layout_height="match_parent"
-                            android:background="@color/widget_border_light" />
-
-                        <!-- Points Stat -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="@dimen/spacing_sm">
-
-                            <TextView
-                                android:id="@+id/tv_points_count"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="sans-serif-black"
-                                android:text="@string/stat_points"
-                                android:textColor="@color/navy"
-                                android:textSize="18sp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_xs"
-                                android:fontFamily="sans-serif-medium"
-                                android:letterSpacing="0.1"
-                                android:text="@string/stat_points_label"
-                                android:textAllCaps="true"
-                                android:textColor="@color/grey_text"
-                                android:textSize="@dimen/text_size_micro" />
-                        </LinearLayout>
-
-                        <!-- Divider -->
-                        <View
-                            android:layout_width="1dp"
-                            android:layout_height="match_parent"
-                            android:background="@color/widget_border_light" />
-
-                        <!-- Coupons Stat -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:paddingVertical="@dimen/spacing_sm">
-
-                            <TextView
-                                android:id="@+id/tv_coupons_count"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="sans-serif-black"
-                                android:text="@string/stat_coupons"
-                                android:textColor="@color/navy"
-                                android:textSize="18sp" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_xs"
-                                android:fontFamily="sans-serif-medium"
-                                android:letterSpacing="0.1"
-                                android:text="@string/stat_coupons_label"
-                                android:textAllCaps="true"
-                                android:textColor="@color/grey_text"
-                                android:textSize="@dimen/text_size_micro" />
-                        </LinearLayout>
-                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Account Settings Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -222,7 +79,6 @@
                 android:textColor="@color/grey_text"
                 android:textSize="@dimen/text_size_caption" />
 
-            <!-- Account Settings Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -238,7 +94,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!-- Personal Information -->
                     <LinearLayout
                         android:id="@+id/menu_personal_info"
                         android:layout_width="match_parent"
@@ -276,14 +131,12 @@
                             app:tint="@color/grey_text" />
                     </LinearLayout>
 
-                    <!-- Divider -->
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginStart="@dimen/spacing_lg"
                         android:background="@color/widget_border_light" />
 
-                    <!-- Manage Addresses -->
                     <LinearLayout
                         android:id="@+id/menu_addresses"
                         android:layout_width="match_parent"
@@ -321,14 +174,12 @@
                             app:tint="@color/grey_text" />
                     </LinearLayout>
 
-                    <!-- Divider -->
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginStart="@dimen/spacing_lg"
                         android:background="@color/widget_border_light" />
 
-                    <!-- Payment Methods -->
                     <LinearLayout
                         android:id="@+id/menu_payment_methods"
                         android:layout_width="match_parent"
@@ -368,7 +219,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Preferences Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -381,7 +231,6 @@
                 android:textColor="@color/grey_text"
                 android:textSize="@dimen/text_size_caption" />
 
-            <!-- Preferences Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -397,7 +246,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <!-- Push Notifications with Toggle (L4: RelativeLayout) -->
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -453,14 +301,12 @@
                             app:trackTint="@color/primary" />
                     </RelativeLayout>
 
-                    <!-- Divider -->
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginStart="@dimen/spacing_lg"
                         android:background="@color/widget_border_light" />
 
-                    <!-- Language Selection -->
                     <LinearLayout
                         android:id="@+id/menu_language"
                         android:layout_width="match_parent"
@@ -508,14 +354,12 @@
                             app:tint="@color/grey_text" />
                     </LinearLayout>
 
-                    <!-- Divider -->
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:layout_marginStart="@dimen/spacing_lg"
                         android:background="@color/widget_border_light" />
 
-                    <!-- Dark Mode with Toggle (L4: RelativeLayout) -->
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -558,7 +402,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Sign Out Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_sign_out"
                 android:layout_width="match_parent"
@@ -581,5 +424,3 @@
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
-
-
