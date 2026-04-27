@@ -1,52 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Root Container: Standard Layout for Top App Bar + Scrollable Content + Fixed Footer -->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Root Container: Standard Layout for Top App Bar + Scrollable Content + Fixed Footer -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_theme_light_background">
+    android:background="@color/md_theme_light_background"
+    android:orientation="vertical">
 
     <!-- Top App Bar -->
-    <RelativeLayout
-        android:id="@+id/toolbar_checkout"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar_checkout"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_alignParentTop="true"
+        android:layout_height="wrap_content"
         android:background="@color/md_theme_light_surface"
-        android:elevation="@dimen/elevation_app_bar"
-        android:paddingHorizontal="@dimen/spacing_lg">
+        app:elevation="@dimen/elevation_app_bar">
 
-        <ImageButton
-            android:id="@+id/btn_back"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/navigate_back"
-            android:src="@drawable/ic_arrow_back_toolbar"
-            app:tint="@color/navy" />
-
-        <TextView
-            android:id="@+id/tv_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/spacing_lg"
-            android:layout_toEndOf="@id/btn_back"
-            android:fontFamily="sans-serif-black"
-            android:text="@string/checkout"
-            android:textColor="@color/navy"
-            android:textSize="20sp" />
-    </RelativeLayout>
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_checkout"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:paddingHorizontal="@dimen/spacing_lg"
+            app:title="@string/checkout"
+            app:titleTextColor="@color/navy" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Scrollable Content -->
     <ScrollView
         android:id="@+id/scroll_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/footer_checkout"
-        android:layout_below="@id/toolbar_checkout"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:fillViewport="true"
         android:scrollbars="none">
 
@@ -60,7 +43,6 @@
 
             <!-- ORDER SUMMARY SECTION -->
             <RelativeLayout
-                android:id="@+id/layout_order_summary_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_lg">
@@ -81,41 +63,30 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:fontFamily="sans-serif-bold"
-                    android:text="@string/three_items"
+                    android:text="0 items"
                     android:textColor="@color/primary"
                     android:textSize="@dimen/text_size_body" />
             </RelativeLayout>
 
+            <!-- Empty Cart State -->
             <TextView
-                android:id="@+id/tv_cart_empty"
+                android:id="@+id/tv_empty_cart"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_lg"
                 android:gravity="center"
-                android:text="@string/cart_empty_message"
-                android:textAppearance="@style/TextAppearance.QuickBite.Body"
+                android:text="Your cart is empty"
+                android:textColor="@color/grey_text"
+                android:textSize="@dimen/text_size_body"
                 android:visibility="gone" />
 
-            <!-- Order Items -->
-            <LinearLayout
-                android:id="@+id/ll_order_items"
+            <!-- Order Items RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_order_items"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_xxl"
-                android:orientation="vertical">
-
-                <include
-                    android:id="@+id/item_order_1"
-                    layout="@layout/item_checkout_order" />
-
-                <include
-                    android:id="@+id/item_order_2"
-                    layout="@layout/item_checkout_order" />
-
-                <include
-                    android:id="@+id/item_order_3"
-                    layout="@layout/item_checkout_order" />
-            </LinearLayout>
+                android:nestedScrollingEnabled="false" />
 
             <!-- PROMO CODE SECTION -->
             <TextView
@@ -198,11 +169,10 @@
                 android:orientation="vertical">
 
                 <!-- Credit Card Option -->
-                <LinearLayout
+                <RelativeLayout
                     android:id="@+id/rl_payment_card"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:layout_marginBottom="@dimen/spacing_md"
                     android:background="@drawable/bg_payment_selected"
                     android:clickable="true"
@@ -210,21 +180,31 @@
                     android:paddingHorizontal="@dimen/spacing_lg"
                     android:paddingVertical="@dimen/spacing_lg">
 
-                    <ImageView
-                        android:id="@+id/img_card"
-                        android:layout_width="@dimen/icon_size_medium"
-                        android:layout_height="@dimen/icon_size_medium"
-                        android:layout_gravity="center"
-                        android:contentDescription="@string/payment_method"
-                        android:src="@drawable/ic_credit_card_128"
-                        app:tint="@color/primary" />
+                    <FrameLayout
+                        android:id="@+id/fl_card_icon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/bg_payment_icon_selected">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_medium"
+                            android:layout_height="@dimen/icon_size_medium"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/payment_method"
+                            android:src="@drawable/ic_credit_card_128"
+                            app:tint="@color/primary" />
+                    </FrameLayout>
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_centerVertical="true"
                         android:layout_marginStart="@dimen/spacing_lg"
                         android:layout_marginEnd="@dimen/spacing_lg"
+                        android:layout_toStartOf="@id/iv_check_card"
+                        android:layout_toEndOf="@id/fl_card_icon"
                         android:orientation="vertical">
 
                         <TextView
@@ -249,37 +229,48 @@
                         android:id="@+id/iv_check_card"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentTop="true"
                         android:layout_marginTop="@dimen/spacing_sm"
                         android:contentDescription="@string/cd_back_button"
                         android:src="@drawable/ic_check_circle_128"
                         app:tint="@color/primary" />
-                </LinearLayout>
+                </RelativeLayout>
 
                 <!-- Cash Option -->
-                <LinearLayout
+                <RelativeLayout
                     android:id="@+id/rl_payment_cash"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:background="@drawable/bg_payment_unselected"
                     android:clickable="true"
                     android:focusable="true"
                     android:paddingHorizontal="@dimen/spacing_lg"
                     android:paddingVertical="@dimen/spacing_lg">
-                    <ImageView
-                        android:id="@+id/img_cod"
-                        android:layout_width="@dimen/icon_size_medium"
-                        android:layout_height="@dimen/icon_size_medium"
-                        android:layout_gravity="center"
-                        android:contentDescription="@string/payment_method"
-                        android:src="@drawable/ic_payments_128"
-                        app:tint="@color/grey_text" />
+
+                    <FrameLayout
+                        android:id="@+id/fl_cash_icon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/bg_payment_icon_unselected">
+
+                        <ImageView
+                            android:layout_width="@dimen/icon_size_medium"
+                            android:layout_height="@dimen/icon_size_medium"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/payment_method"
+                            android:src="@drawable/ic_payments_128"
+                            app:tint="@color/grey_text" />
+                    </FrameLayout>
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_centerVertical="true"
                         android:layout_marginStart="@dimen/spacing_lg"
+                        android:layout_toEndOf="@id/fl_cash_icon"
                         android:orientation="vertical">
 
                         <TextView
@@ -299,21 +290,11 @@
                             android:textColor="@color/grey_text"
                             android:textSize="12sp" />
                     </LinearLayout>
-
-                    <ImageView
-                        android:id="@+id/iv_check_cod"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:layout_marginTop="@dimen/spacing_sm"
-                        android:contentDescription="@string/cd_back_button"
-                        android:src="@drawable/ic_check_circle_128"
-                        app:tint="@color/primary" />
-                </LinearLayout>
+                </RelativeLayout>
             </LinearLayout>
 
             <!-- PRICE BREAKDOWN -->
             <LinearLayout
-                android:id="@+id/layout_price_breakdown"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_sm"
@@ -340,7 +321,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:fontFamily="sans-serif"
-                        android:text="@string/price_18_50"
+                        android:text="$0.00"
                         android:textColor="@color/grey_text"
                         android:textSize="@dimen/text_size_body" />
                 </RelativeLayout>
@@ -366,7 +347,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:fontFamily="sans-serif"
-                        android:text="@string/price_2_00"
+                        android:text="$2.00"
                         android:textColor="@color/grey_text"
                         android:textSize="@dimen/text_size_body" />
                 </RelativeLayout>
@@ -392,7 +373,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:fontFamily="sans-serif"
-                        android:text="@string/price_minus_0_00"
+                        android:text="-$0.00"
                         android:textColor="#27AE60"
                         android:textSize="@dimen/text_size_body" />
                 </RelativeLayout>
@@ -429,7 +410,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
                         android:fontFamily="sans-serif-black"
-                        android:text="@string/price_20_50"
+                        android:text="$0.00"
                         android:textColor="@color/primary"
                         android:textSize="24sp" />
                 </RelativeLayout>
@@ -438,13 +419,13 @@
     </ScrollView>
 
     <!-- Fixed Footer -->
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/footer_checkout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:background="#CCFFFFFF"
         android:elevation="@dimen/elevation_bottom_nav"
+        android:orientation="vertical"
         android:padding="@dimen/spacing_lg">
 
         <Button
@@ -459,6 +440,5 @@
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="@dimen/text_size_title" />
-    </RelativeLayout>
-</RelativeLayout>
-
+    </LinearLayout>
+</LinearLayout>
