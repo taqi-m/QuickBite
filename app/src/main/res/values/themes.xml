@@ -92,6 +92,12 @@
         <item name="android:textColor">@color/md_theme_light_onBackground</item>
     </style>
 
+    <style name="TextAppearance.QuickBite.Subtitle" parent="TextAppearance.Material3.TitleSmall">
+        <item name="android:textSize">@dimen/text_size_subhead</item>
+        <item name="android:fontFamily">sans-serif-bold</item>
+        <item name="android:textColor">@color/md_theme_light_onBackground</item>
+    </style>
+
     <style name="TextAppearance.QuickBite.SectionHeader" parent="TextAppearance.Material3.LabelMedium">
         <item name="android:textSize">@dimen/text_size_caption</item>
         <item name="android:fontFamily">sans-serif-black</item>

@@ -6,12 +6,6 @@
         android:title="@string/nav_home"
         android:enabled="true" />
 
-    <item
-        android:id="@+id/nav_search"
-        android:icon="@drawable/ic_search_128"
-        android:title="@string/nav_search"
-        android:enabled="true" />
-
     <!-- Placeholder for FAB -->
     <item
         android:id="@+id/nav_cart_placeholder"

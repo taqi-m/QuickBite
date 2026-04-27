@@ -6,16 +6,14 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.quick.bite.ui.fragments.HistoryFragment
 import com.quick.bite.ui.fragments.HomeFragment
 import com.quick.bite.ui.fragments.ProfileFragment
-import com.quick.bite.ui.fragments.SearchFragment
 
 class MainPagerAdapter(fragmentActivity: FragmentActivity) : FragmentStateAdapter(fragmentActivity) {
 
     companion object {
         const val HOME_POSITION = 0
-        const val SEARCH_POSITION = 1
-        const val HISTORY_POSITION = 2
-        const val PROFILE_POSITION = 3
-        const val TOTAL_PAGES = 4
+        const val HISTORY_POSITION = 1
+        const val PROFILE_POSITION = 2
+        const val TOTAL_PAGES = 3
     }
 
     override fun getItemCount(): Int = TOTAL_PAGES
@@ -23,7 +21,6 @@ class MainPagerAdapter(fragmentActivity: FragmentActivity) : FragmentStateAdapte
     override fun createFragment(position: Int): Fragment {
         return when (position) {
             HOME_POSITION -> HomeFragment()
-            SEARCH_POSITION -> SearchFragment()
             HISTORY_POSITION -> HistoryFragment()
             PROFILE_POSITION -> ProfileFragment()
             else -> HomeFragment()

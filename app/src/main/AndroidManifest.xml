@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,16 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuickBite">
         <activity
-            android:name=".ui.history.OrderHistoryActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.checkout.CheckoutActivity"
-            android:exported="false" />
-        <activity
-            android:name=".RestaurantDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".LoginActivity"
+            android:name=".ui.activities.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,8 +23,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.activities.CheckoutActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.activities.RestaurantDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.MainActivity"
+            android:exported="false">
+        </activity>
     </application>
 
 </manifest>

@@ -7,7 +7,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/md_theme_light_background"
-    tools:context=".RestaurantDetailActivity">
+    tools:context=".ui.activities.RestaurantDetailActivity"
+    tools:ignore="HardcodedText" >
 
     <!-- L1: Complex Scrolling - AppBarLayout with CollapsingToolbarLayout -->
     <com.google.android.material.appbar.AppBarLayout
@@ -50,39 +51,8 @@
                 android:layout_height="?attr/actionBarSize"
                 android:background="@android:color/transparent"
                 app:layout_collapseMode="pin"
-                app:navigationIcon="@drawable/ic_arrow_back_toolbar"
                 app:title=""
                 app:titleTextColor="@color/white">
-
-                <!-- Custom Toolbar Layout for Right Actions -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="end"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginEnd="@dimen/spacing_lg">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_favorite"
-                        style="@style/Widget.Material3.Button.IconButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:layout_marginEnd="@dimen/spacing_sm"
-                        android:backgroundTint="#33FFFFFF"
-                        app:icon="@drawable/ic_favorite_128"
-                        app:iconTint="@color/white" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_share"
-                        style="@style/Widget.Material3.Button.IconButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:backgroundTint="#33FFFFFF"
-                        app:icon="@drawable/ic_share_128"
-                        app:iconTint="@color/white" />
-                </LinearLayout>
             </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -92,123 +62,103 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingBottom="72dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="@dimen/spacing_md"
             android:orientation="vertical">
 
-            <!-- L2: Restaurant Info Section with Overlapping Logo -->
+            <ProgressBar
+                android:id="@+id/pb_detail_loading"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:visibility="gone" />
+
+            <!-- Restaurant Name and Info -->
             <LinearLayout
+                android:id="@+id/layout_restaurant_info"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:background="@drawable/bg_restaurant_info_top"
                 android:paddingHorizontal="@dimen/spacing_lg"
+                android:paddingTop="@dimen/spacing_xl"
                 android:paddingBottom="@dimen/spacing_lg">
-
-                <!-- Restaurant Name and Info -->
-                <LinearLayout
-                    android:id="@+id/layout_restaurant_info"
-                    android:layout_width="0dp"
+                <TextView
+                    android:id="@+id/tv_restaurant_name"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/frame_restaurant_logo">
+                    android:text="Artisan Pizza Hub"
+                    android:textSize="24sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textColor="@color/md_theme_light_onBackground"
+                    android:letterSpacing="-0.02"/>
+
+                <!-- Restaurant Category and Rating -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="@dimen/spacing_xs">
 
                     <TextView
-                        android:id="@+id/tv_restaurant_name"
+                        android:id="@+id/tv_restaurant_category"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Artisan Pizza Hub"
-                        android:textSize="24sp"
-                        android:fontFamily="sans-serif-black"
-                        android:textColor="@color/md_theme_light_onBackground"
-                        android:letterSpacing="-0.02" />
+                        android:text="Italian"
+                        android:textSize="@dimen/text_size_body"
+                        android:textColor="@color/md_theme_light_onSurfaceVariant" />
 
-                    <!-- Restaurant Category and Rating -->
+                    <!-- Rating Divider -->
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="4dp"
+                        android:layout_marginHorizontal="@dimen/spacing_sm"
+                        android:background="@drawable/shape_rating_divider" />
+
+                    <!-- Rating Section -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="@dimen/spacing_xs">
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_marginEnd="4dp"
+                            android:src="@drawable/ic_star_128"
+                            android:contentDescription="@string/cd_rating_star" />
 
                         <TextView
-                            android:id="@+id/tv_restaurant_category"
+                            android:id="@+id/tv_restaurant_rating"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Italian • Gourmet Pizza"
+                            android:text="4.8"
                             android:textSize="@dimen/text_size_body"
-                            android:textColor="@color/md_theme_light_onSurfaceVariant" />
+                            android:fontFamily="sans-serif-black"
+                            android:textColor="@color/accent" />
 
-                        <!-- Rating Divider -->
-                        <View
-                            android:layout_width="4dp"
-                            android:layout_height="4dp"
-                            android:layout_marginHorizontal="@dimen/spacing_sm"
-                            android:background="@drawable/shape_rating_divider" />
-
-                        <!-- Rating Section -->
-                        <LinearLayout
+                        <TextView
+                            android:id="@+id/tv_rating_count"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:layout_marginEnd="4dp"
-                                android:src="@drawable/ic_star_128"
-                                android:contentDescription="@string/cd_rating_star" />
-
-                            <TextView
-                                android:id="@+id/tv_restaurant_rating"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="4.8"
-                                android:textSize="@dimen/text_size_body"
-                                android:fontFamily="sans-serif-black"
-                                android:textColor="@color/accent" />
-
-                            <TextView
-                                android:id="@+id/tv_rating_count"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="(500+ reviews)"
-                                android:textSize="@dimen/text_size_caption"
-                                android:textColor="@color/md_theme_light_onSurfaceVariant"
-                                android:layout_marginStart="@dimen/spacing_xs" />
-                        </LinearLayout>
+                            android:text="(500+ reviews)"
+                            android:textSize="@dimen/text_size_caption"
+                            android:textColor="@color/md_theme_light_onSurfaceVariant"
+                            android:layout_marginStart="@dimen/spacing_xs" />
                     </LinearLayout>
                 </LinearLayout>
-
-
-                <!-- L2: Overlapping Restaurant Logo -->
-                <FrameLayout
-                    android:id="@+id/frame_restaurant_logo"
-                    android:layout_width="56dp"
-                    android:layout_height="match_parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
-                    <!-- Restaurant Logo -->
-                    <ImageView
-                        android:id="@+id/iv_restaurant_logo"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_gravity="center"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/restaurant_logo_placeholder"
-                        android:contentDescription="@string/cd_restaurant_logo" />
-                </FrameLayout>
             </LinearLayout>
 
-            <!-- L3: Delivery Stats Strip with Proportional Dividers -->
+            <!-- Delivery Stats Strip with Proportional Dividers -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -305,65 +255,13 @@
                 android:scrollbars="none"
                 android:clipToPadding="false">
 
-                <LinearLayout
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chip_group_categories"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_best_sellers"
-                        style="@style/Widget.QuickBite.Chip.Selected"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/spacing_sm"
-                        android:text="@string/category_best_sellers"
-                        android:checkable="true"
-                        android:checked="true" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_specialty_pizza"
-                        style="@style/Widget.QuickBite.Chip"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/spacing_sm"
-                        android:text="@string/category_specialty_pizza"
-                        android:checkable="true" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_sides"
-                        style="@style/Widget.QuickBite.Chip"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/spacing_sm"
-                        android:text="@string/category_sides"
-                        android:checkable="true" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_beverages"
-                        style="@style/Widget.QuickBite.Chip"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/spacing_sm"
-                        android:text="@string/category_beverages"
-                        android:checkable="true" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_combos"
-                        style="@style/Widget.QuickBite.Chip"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="@dimen/spacing_sm"
-                        android:text="@string/category_combos"
-                        android:checkable="true" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chip_desserts"
-                        style="@style/Widget.QuickBite.Chip"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/category_desserts"
-                        android:checkable="true" />
-                </LinearLayout>
+                    app:singleSelection="true"
+                    app:selectionRequired="true"
+                    app:singleLine="true" />
             </HorizontalScrollView>
 
             <!-- Menu Section -->
@@ -373,7 +271,8 @@
                 android:orientation="vertical"
                 android:background="@color/md_theme_light_background"
                 android:paddingHorizontal="@dimen/spacing_lg"
-                android:paddingTop="@dimen/spacing_xl">
+                android:paddingTop="@dimen/spacing_xl"
+                android:paddingBottom="@dimen/spacing_xxl">
 
                 <!-- Section Header -->
                 <TextView
@@ -404,7 +303,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginHorizontal="@dimen/spacing_lg"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="56dp"
         android:layout_gravity="bottom"
         android:text="@string/view_cart_with_items"
         android:textAllCaps="true"
