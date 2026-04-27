@@ -45,6 +45,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="32dp"
                 android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="-8dp"
                 android:text="@string/add_button"
                 android:textSize="@dimen/text_size_micro"
                 android:fontFamily="sans-serif-black"
@@ -83,7 +84,7 @@
                     android:contentDescription="@string/cd_veg_indicator" />
 
                 <TextView
-                    android:id="@+id/tv_veg_label"
+                    android:id="@+id/tv_type_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/veg_label"

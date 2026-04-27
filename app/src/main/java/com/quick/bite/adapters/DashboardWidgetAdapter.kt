@@ -7,8 +7,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
-import com.quick.bite.model.DashboardWidget
-import com.quick.bite.MainActivity
+import com.quick.bite.model.others.DashboardWidget
+import com.quick.bite.ui.activities.MainActivity
 import com.quick.bite.R
 
 // Simple RecyclerView Adapters for demo purposes

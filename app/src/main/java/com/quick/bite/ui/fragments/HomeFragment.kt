@@ -12,13 +12,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
-import com.quick.bite.model.DashboardWidget
-import com.quick.bite.model.ActiveKitchen
+import com.quick.bite.model.others.DashboardWidget
+import com.quick.bite.model.others.ActiveKitchen
 import com.quick.bite.adapters.ActiveKitchenAdapter
 import com.quick.bite.adapters.DashboardWidgetAdapter
-import com.quick.bite.MainActivity
+import com.quick.bite.ui.activities.MainActivity
 import com.quick.bite.R
-import com.quick.bite.api.RetrofitClient
 import com.quick.bite.data.db.QuickBiteDatabaseManager
 import com.quick.bite.data.repository.QuickBiteRepository
 import com.quick.bite.model.Restaurant
@@ -54,7 +53,7 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        repository = QuickBiteRepository(RetrofitClient.getApiService(), QuickBiteDatabaseManager(requireContext()))
+        repository = QuickBiteRepository(QuickBiteDatabaseManager(requireContext()))
         progressBar = view.findViewById(R.id.pb_home_loading)
         rvKitchens = view.findViewById(R.id.rv_active_kitchens)
 
@@ -71,13 +70,14 @@ class HomeFragment : Fragment() {
         progressBar.visibility = View.VISIBLE
 
         viewLifecycleOwner.lifecycleScope.launch {
+            // repository.getRestaurants() now returns Result<List<Restaurant>>[cite: 1, 8]
             val result = repository.getRestaurants()
             progressBar.visibility = View.GONE
 
             result.onSuccess { restaurants ->
                 updateKitchensList(restaurants)
             }.onFailure { error ->
-                Toast.makeText(context, "Sync Error: Using offline data if available.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Critical Error: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -87,10 +87,10 @@ class HomeFragment : Fragment() {
             ActiveKitchen(
                 restaurantId = restaurant.restaurantID,
                 icon = "🍽",
-                name = restaurant.restaurantName,
-                category = "${restaurant.type} • ${priceTierFor(2.0)}",
-                rating = "4.5 ★",
-                deliveryTime = "25m",
+                name = restaurant.name, // Fixed: using restaurant.name from Model[cite: 2]
+                category = "${restaurant.category} • ${priceTierFor(2.0)}",
+                rating = "${restaurant.rating} ★",
+                deliveryTime = "${restaurant.deliveryTime}m",
                 deliveryFee = "$2.00"
             )
         }
