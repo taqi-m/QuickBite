@@ -2,996 +2,745 @@ package com.quick.bite.data.db
 
 import android.content.ContentValues
 import android.content.Context
-import com.quick.bite.data.db.QuickBiteContract.UserEntry
-import com.quick.bite.data.db.QuickBiteContract.RestaurantEntry
-import com.quick.bite.data.db.QuickBiteContract.ItemEntry
-import com.quick.bite.data.db.QuickBiteContract.MasterOrderEntry
-import com.quick.bite.data.db.QuickBiteContract.OrderEntry
-import com.quick.bite.model.*
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import androidx.core.database.sqlite.transaction
+import com.quick.bite.model.User
 
 /**
  * QuickBiteDatabaseManager provides a high-level interface for all database operations.
- * Handles CRUD (Create, Read, Update, Delete) operations for all entities.
- *
- * Schema and operations are aligned with Fake Restaurant API endpoints.
- * This class manages the lifecycle of the database helper and provides
- * convenient methods to interact with the database from the application.
+ * Handles CRUD operations and bulk synchronization for offline-first architecture.
  */
 @Suppress("unused")
 class QuickBiteDatabaseManager(context: Context) {
 
     private val dbHelper = QuickBiteDatabaseHelper(context)
 
-    // ========== SYNC OPERATIONS ==========
+    // =========================
+    // SYNC OPERATIONS (OFFLINE-FIRST)
+    // =========================
 
     /**
-     * Clears existing restaurants and inserts the fresh list from the API.
-     * Wrapped in a transaction for performance and data integrity.
+     * Replaces local restaurant data with fresh network data within a transaction.
      */
-    fun syncRestaurants(restaurants: List<Restaurant>) {
+    fun syncRestaurants(restaurants: List<Map<String, Any?>>) {
         val db = dbHelper.writableDatabase
         db.transaction {
-            try {
-                // Clear existing data to avoid staleness or duplicates
-                delete(RestaurantEntry.TABLE_NAME, null, null)
-
-                restaurants.forEach { restaurant ->
-                    val values = ContentValues().apply {
-                        put(RestaurantEntry.COLUMN_ID, restaurant.restaurantID) // Use API ID
-                        put(RestaurantEntry.COLUMN_NAME, restaurant.restaurantName)
-                        put(RestaurantEntry.COLUMN_ADDRESS, restaurant.address)
-                        put(RestaurantEntry.COLUMN_TYPE, restaurant.type)
-                        put(RestaurantEntry.COLUMN_PARKING_LOT, if (restaurant.parkingLot) 1 else 0)
-                    }
-                    insert(RestaurantEntry.TABLE_NAME, null, values)
+            delete(QuickBiteContract.RestaurantEntry.TABLE_NAME, null, null)
+            restaurants.forEach { data ->
+                val values = ContentValues().apply {
+                    put(QuickBiteContract.RestaurantEntry.COLUMN_RESTAURANT_ID, (data["restaurantID"] as? Number)?.toInt())
+                    put(QuickBiteContract.RestaurantEntry.COLUMN_NAME, data["name"] as? String)
+                    put(QuickBiteContract.RestaurantEntry.COLUMN_IMAGE_URL, data["imageUrl"] as? String)
+                    put(QuickBiteContract.RestaurantEntry.COLUMN_CATEGORY, data["category"] as? String)
+                    put(QuickBiteContract.RestaurantEntry.COLUMN_RATING, (data["rating"] as? Number)?.toDouble())
+                    put(QuickBiteContract.RestaurantEntry.COLUMN_DELIVERY_TIME, (data["deliveryTime"] as? Number)?.toInt())
                 }
-            } finally {
+                insert(QuickBiteContract.RestaurantEntry.TABLE_NAME, null, values)
             }
         }
     }
 
     /**
-     * Clears existing menu items for a specific restaurant and inserts the fresh list.
+     * Replaces local items data with fresh network data.
      */
-    fun syncMenu(restaurantId: Int, items: List<Item>) {
+    fun syncItems(items: List<Map<String, Any?>>) {
         val db = dbHelper.writableDatabase
         db.transaction {
-            try {
-                delete(
-                    ItemEntry.TABLE_NAME,
-                    "${ItemEntry.COLUMN_RESTAURANT_ID} = ?",
-                    arrayOf(restaurantId.toString())
-                )
-
-                items.forEach { item ->
-                    val values = ContentValues().apply {
-                        put(ItemEntry.COLUMN_ID, item.itemID) // Use API ID
-                        put(ItemEntry.COLUMN_NAME, item.itemName)
-                        put(ItemEntry.COLUMN_DESCRIPTION, item.itemDescription)
-                        put(ItemEntry.COLUMN_PRICE, item.itemPrice)
-                        put(ItemEntry.COLUMN_RESTAURANT_NAME, item.restaurantName)
-                        put(ItemEntry.COLUMN_RESTAURANT_ID, item.restaurantID)
-                        put(ItemEntry.COLUMN_IMAGE_URL, item.imageUrl)
-                    }
-                    insert(ItemEntry.TABLE_NAME, null, values)
+            delete(QuickBiteContract.ItemEntry.TABLE_NAME, null, null)
+            items.forEach { data ->
+                val values = ContentValues().apply {
+                    put(QuickBiteContract.ItemEntry.COLUMN_ITEM_ID, (data["itemID"] as? Number)?.toInt())
+                    put(QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_ID, (data["restaurantID"] as? Number)?.toInt())
+                    put(QuickBiteContract.ItemEntry.COLUMN_NAME, data["name"] as? String)
+                    put(QuickBiteContract.ItemEntry.COLUMN_DESCRIPTION, data["description"] as? String)
+                    put(QuickBiteContract.ItemEntry.COLUMN_IMAGE_URL, data["imageUrl"] as? String)
+                    put(QuickBiteContract.ItemEntry.COLUMN_TYPE_LABEL, data["typeLabel"] as? String)
+                    put(QuickBiteContract.ItemEntry.COLUMN_PRICE, (data["price"] as? Number)?.toDouble())
+                    put(QuickBiteContract.ItemEntry.COLUMN_ITEM_RATING, (data["itemRating"] as? Number)?.toDouble())
                 }
-            } finally {
+                insert(QuickBiteContract.ItemEntry.TABLE_NAME, null, values)
             }
         }
     }
 
     /**
-     * Syncs the user's order history from the remote API into the local SQLite database.
+     * Syncs a single restaurant to local DB (upsert).
      */
-    fun syncMasterOrders(userEmail: String, orders: List<MasterOrder>) {
-        val db = dbHelper.writableDatabase
-        db.transaction {
-            try {
-                // Clear existing orders for this user to prevent duplicates
-                delete(
-                    MasterOrderEntry.TABLE_NAME,
-                    "${MasterOrderEntry.COLUMN_USER_EMAIL} = ?",
-                    arrayOf(userEmail)
-                )
-
-                orders.forEach { order ->
-                    val values = ContentValues().apply {
-                        put(MasterOrderEntry.COLUMN_ID, order.masterID)
-                        put(MasterOrderEntry.COLUMN_USER_EMAIL, order.userID)
-                        put(MasterOrderEntry.COLUMN_USER_CODE, order.usercode)
-                        put(MasterOrderEntry.COLUMN_RESTAURANT_ID, order.restaurantID)
-                        put(MasterOrderEntry.COLUMN_GRAND_TOTAL, order.grandtotal)
-                    }
-                    insert(MasterOrderEntry.TABLE_NAME, null, values)
-                }
-            } finally {
-            }
-        }
-    }
-
-    // ========== USER OPERATIONS ==========
-
-    /**
-     * Register a new user in the database
-     * @return The number of rows inserted (1 if successful, -1 if error)
-     */
-    fun registerUser(userEmail: String, password: String, usercode: String): Long {
+    fun syncSingleRestaurant(restaurant: Map<String, Any?>) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
-            put(UserEntry.COLUMN_EMAIL, userEmail)
-            put(UserEntry.COLUMN_PASSWORD, password)
-            put(UserEntry.COLUMN_USER_CODE, usercode)
+            put(QuickBiteContract.RestaurantEntry.COLUMN_RESTAURANT_ID, (restaurant["restaurantID"] as? Number)?.toInt())
+            put(QuickBiteContract.RestaurantEntry.COLUMN_NAME, restaurant["name"] as? String)
+            put(QuickBiteContract.RestaurantEntry.COLUMN_IMAGE_URL, restaurant["imageUrl"] as? String)
+            put(QuickBiteContract.RestaurantEntry.COLUMN_CATEGORY, restaurant["category"] as? String)
+            put(QuickBiteContract.RestaurantEntry.COLUMN_RATING, (restaurant["rating"] as? Number)?.toDouble())
+            put(QuickBiteContract.RestaurantEntry.COLUMN_DELIVERY_TIME, (restaurant["deliveryTime"] as? Number)?.toInt())
         }
-        return db.insert(UserEntry.TABLE_NAME, null, values)
-    }
-
-    /**
-     * Retrieve a user by email
-     */
-    fun getUserByEmail(userEmail: String): User? {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            UserEntry.TABLE_NAME,
+        db.insertWithOnConflict(
+            QuickBiteContract.RestaurantEntry.TABLE_NAME,
             null,
-            "${UserEntry.COLUMN_EMAIL} = ?",
-            arrayOf(userEmail),
-            null,
-            null,
-            null
-        )
-
-        return cursor.use {
-            if (it.moveToFirst()) {
-                User(
-                    userEmail = it.getString(it.getColumnIndexOrThrow(UserEntry.COLUMN_EMAIL)),
-                    password = it.getString(it.getColumnIndexOrThrow(UserEntry.COLUMN_PASSWORD)),
-                    usercode = it.getString(it.getColumnIndexOrThrow(UserEntry.COLUMN_USER_CODE))
-                )
-            } else {
-                null
-            }
-        }
-    }
-
-    /**
-     * Retrieve all users
-     */
-    fun getAllUsers(): List<User> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(UserEntry.TABLE_NAME, null, null, null, null, null, null)
-        val users = mutableListOf<User>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                users.add(
-                    User(
-                        userEmail = it.getString(it.getColumnIndexOrThrow(UserEntry.COLUMN_EMAIL)),
-                        password = it.getString(it.getColumnIndexOrThrow(UserEntry.COLUMN_PASSWORD)),
-                        usercode = it.getString(it.getColumnIndexOrThrow(UserEntry.COLUMN_USER_CODE))
-                    )
-                )
-            }
-        }
-        return users
-    }
-
-    /**
-     * Update user password
-     */
-    fun updateUserPassword(userEmail: String, newPassword: String): Int {
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put(UserEntry.COLUMN_PASSWORD, newPassword)
-        }
-        return db.update(
-            UserEntry.TABLE_NAME,
             values,
-            "${UserEntry.COLUMN_EMAIL} = ?",
-            arrayOf(userEmail)
+            SQLiteDatabase.CONFLICT_REPLACE
         )
     }
 
     /**
-     * Delete a user by email
+     * Syncs a single item to local DB (upsert).
      */
-    fun deleteUser(userEmail: String): Int {
-        val db = dbHelper.writableDatabase
-        return db.delete(
-            UserEntry.TABLE_NAME,
-            "${UserEntry.COLUMN_EMAIL} = ?",
-            arrayOf(userEmail)
-        )
-    }
-
-    // ========== RESTAURANT OPERATIONS ==========
-
-    /**
-     * Insert a new restaurant
-     */
-    fun insertRestaurant(restaurant: Restaurant): Long {
+    fun syncSingleItem(item: Map<String, Any?>) {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
-            put(RestaurantEntry.COLUMN_NAME, restaurant.restaurantName)
-            put(RestaurantEntry.COLUMN_ADDRESS, restaurant.address)
-            put(RestaurantEntry.COLUMN_TYPE, restaurant.type)
-            put(RestaurantEntry.COLUMN_PARKING_LOT, if (restaurant.parkingLot) 1 else 0)
+            put(QuickBiteContract.ItemEntry.COLUMN_ITEM_ID, (item["itemID"] as? Number)?.toInt())
+            put(QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_ID, (item["restaurantID"] as? Number)?.toInt())
+            put(QuickBiteContract.ItemEntry.COLUMN_NAME, item["name"] as? String)
+            put(QuickBiteContract.ItemEntry.COLUMN_DESCRIPTION, item["description"] as? String)
+            put(QuickBiteContract.ItemEntry.COLUMN_IMAGE_URL, item["imageUrl"] as? String)
+            put(QuickBiteContract.ItemEntry.COLUMN_TYPE_LABEL, item["typeLabel"] as? String)
+            put(QuickBiteContract.ItemEntry.COLUMN_PRICE, (item["price"] as? Number)?.toDouble())
+            put(QuickBiteContract.ItemEntry.COLUMN_ITEM_RATING, (item["itemRating"] as? Number)?.toDouble())
         }
-        return db.insert(RestaurantEntry.TABLE_NAME, null, values)
-    }
-
-    /**
-     * Retrieve a restaurant by ID
-     */
-    fun getRestaurantById(restaurantId: Int): Restaurant? {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            RestaurantEntry.TABLE_NAME,
+        db.insertWithOnConflict(
+            QuickBiteContract.ItemEntry.TABLE_NAME,
             null,
-            "${RestaurantEntry.COLUMN_ID} = ?",
-            arrayOf(restaurantId.toString()),
-            null,
-            null,
-            null
-        )
-
-        return cursor.use {
-            if (it.moveToFirst()) {
-                Restaurant(
-                    restaurantID = it.getInt(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_ID)),
-                    restaurantName = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_NAME)),
-                    address = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_ADDRESS)),
-                    type = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_TYPE)),
-                    parkingLot = it.getInt(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_PARKING_LOT)) == 1
-                )
-            } else {
-                null
-            }
-        }
-    }
-
-    /**
-     * Retrieve all restaurants
-     */
-    fun getAllRestaurants(): List<Restaurant> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(RestaurantEntry.TABLE_NAME, null, null, null, null, null, null)
-        val restaurants = mutableListOf<Restaurant>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                restaurants.add(
-                    Restaurant(
-                        restaurantID = it.getInt(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_ID)),
-                        restaurantName = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_NAME)),
-                        address = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_ADDRESS)),
-                        type = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_TYPE)),
-                        parkingLot = it.getInt(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_PARKING_LOT)) == 1
-                    )
-                )
-            }
-        }
-        return restaurants
-    }
-
-    /**
-     * Retrieve restaurants by type
-     */
-    fun getRestaurantsByType(type: String): List<Restaurant> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            RestaurantEntry.TABLE_NAME,
-            null,
-            "${RestaurantEntry.COLUMN_TYPE} = ?",
-            arrayOf(type),
-            null,
-            null,
-            null
-        )
-        val restaurants = mutableListOf<Restaurant>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                restaurants.add(
-                    Restaurant(
-                        restaurantID = it.getInt(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_ID)),
-                        restaurantName = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_NAME)),
-                        address = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_ADDRESS)),
-                        type = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_TYPE)),
-                        parkingLot = it.getInt(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_PARKING_LOT)) == 1
-                    )
-                )
-            }
-        }
-        return restaurants
-    }
-
-    /**
-     * Retrieve restaurants by address (substring search)
-     */
-    fun getRestaurantsByAddress(address: String): List<Restaurant> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            RestaurantEntry.TABLE_NAME,
-            null,
-            "${RestaurantEntry.COLUMN_ADDRESS} LIKE ?",
-            arrayOf("%$address%"),
-            null,
-            null,
-            null
-        )
-        val restaurants = mutableListOf<Restaurant>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                restaurants.add(
-                    Restaurant(
-                        restaurantID = it.getInt(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_ID)),
-                        restaurantName = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_NAME)),
-                        address = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_ADDRESS)),
-                        type = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_TYPE)),
-                        parkingLot = it.getInt(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_PARKING_LOT)) == 1
-                    )
-                )
-            }
-        }
-        return restaurants
-    }
-
-    /**
-     * Retrieve restaurants by name
-     */
-    fun getRestaurantsByName(name: String): List<Restaurant> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            RestaurantEntry.TABLE_NAME,
-            null,
-            "${RestaurantEntry.COLUMN_NAME} LIKE ?",
-            arrayOf("%$name%"),
-            null,
-            null,
-            null
-        )
-        val restaurants = mutableListOf<Restaurant>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                restaurants.add(
-                    Restaurant(
-                        restaurantID = it.getInt(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_ID)),
-                        restaurantName = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_NAME)),
-                        address = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_ADDRESS)),
-                        type = it.getString(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_TYPE)),
-                        parkingLot = it.getInt(it.getColumnIndexOrThrow(RestaurantEntry.COLUMN_PARKING_LOT)) == 1
-                    )
-                )
-            }
-        }
-        return restaurants
-    }
-
-    /**
-     * Update a restaurant
-     */
-    fun updateRestaurant(restaurant: Restaurant): Int {
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put(RestaurantEntry.COLUMN_NAME, restaurant.restaurantName)
-            put(RestaurantEntry.COLUMN_ADDRESS, restaurant.address)
-            put(RestaurantEntry.COLUMN_TYPE, restaurant.type)
-            put(RestaurantEntry.COLUMN_PARKING_LOT, if (restaurant.parkingLot) 1 else 0)
-        }
-        return db.update(
-            RestaurantEntry.TABLE_NAME,
             values,
-            "${RestaurantEntry.COLUMN_ID} = ?",
-            arrayOf(restaurant.restaurantID.toString())
+            SQLiteDatabase.CONFLICT_REPLACE
         )
     }
 
-    /**
-     * Delete a restaurant
-     */
-    fun deleteRestaurant(restaurantId: Int): Int {
-        val db = dbHelper.writableDatabase
-        return db.delete(
-            RestaurantEntry.TABLE_NAME,
-            "${RestaurantEntry.COLUMN_ID} = ?",
-            arrayOf(restaurantId.toString())
-        )
-    }
-
-    // ========== ITEM OPERATIONS ==========
+    // =========================
+    // USER OPERATIONS
+    // =========================
 
     /**
-     * Insert a new item
+     * Registers a new user in the local database.
+     * Returns the row ID of the newly inserted user, or -1 on error.
      */
-    fun insertItem(item: Item): Long {
+    fun registerUser(username: String, password: String): Long {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
-            put(ItemEntry.COLUMN_NAME, item.itemName)
-            put(ItemEntry.COLUMN_DESCRIPTION, item.itemDescription)
-            put(ItemEntry.COLUMN_PRICE, item.itemPrice)
-            put(ItemEntry.COLUMN_RESTAURANT_NAME, item.restaurantName)
-            put(ItemEntry.COLUMN_RESTAURANT_ID, item.restaurantID)
-            put(ItemEntry.COLUMN_IMAGE_URL, item.imageUrl)
+            put(QuickBiteContract.UserEntry.COLUMN_USERNAME, username)
+            put(QuickBiteContract.UserEntry.COLUMN_PASSWORD, password)
         }
-        return db.insert(ItemEntry.TABLE_NAME, null, values)
+        return db.insert(QuickBiteContract.UserEntry.TABLE_NAME, null, values)
     }
 
     /**
-     * Retrieve an item by ID
+     * Checks if a user exists with the given credentials.
+     * Returns the user as a map if found, or null.
      */
-    fun getItemById(itemId: Int): Item? {
+    fun loginUser(username: String, password: String): Map<String, Any?>? {
         val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            ItemEntry.TABLE_NAME,
+        val cursor: Cursor = db.query(
+            QuickBiteContract.UserEntry.TABLE_NAME,
             null,
-            "${ItemEntry.COLUMN_ID} = ?",
-            arrayOf(itemId.toString()),
-            null,
-            null,
-            null
-        )
-
-        return cursor.use {
-            if (it.moveToFirst()) {
-                Item(
-                    itemID = it.getInt(it.getColumnIndexOrThrow(ItemEntry.COLUMN_ID)),
-                    itemName = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_NAME)),
-                    itemDescription = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_DESCRIPTION)),
-                    itemPrice = it.getDouble(it.getColumnIndexOrThrow(ItemEntry.COLUMN_PRICE)),
-                    restaurantName = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_RESTAURANT_NAME)),
-                    restaurantID = it.getInt(it.getColumnIndexOrThrow(ItemEntry.COLUMN_RESTAURANT_ID)),
-                    imageUrl = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_IMAGE_URL))
-                )
-            } else {
-                null
-            }
-        }
-    }
-
-    /**
-     * Retrieve all items by restaurant ID
-     */
-    fun getItemsByRestaurantId(restaurantId: Int): List<Item> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            ItemEntry.TABLE_NAME,
-            null,
-            "${ItemEntry.COLUMN_RESTAURANT_ID} = ?",
-            arrayOf(restaurantId.toString()),
-            null,
-            null,
-            null
-        )
-        val items = mutableListOf<Item>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                items.add(
-                    Item(
-                        itemID = it.getInt(it.getColumnIndexOrThrow(ItemEntry.COLUMN_ID)),
-                        itemName = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_NAME)),
-                        itemDescription = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_DESCRIPTION)),
-                        itemPrice = it.getDouble(it.getColumnIndexOrThrow(ItemEntry.COLUMN_PRICE)),
-                        restaurantName = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_RESTAURANT_NAME)),
-                        restaurantID = it.getInt(it.getColumnIndexOrThrow(ItemEntry.COLUMN_RESTAURANT_ID)),
-                        imageUrl = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_IMAGE_URL))
-                    )
-                )
-            }
-        }
-        return items
-    }
-
-    /**
-     * Retrieve all items
-     */
-    fun getAllItems(): List<Item> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(ItemEntry.TABLE_NAME, null, null, null, null, null, null)
-        val items = mutableListOf<Item>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                items.add(
-                    Item(
-                        itemID = it.getInt(it.getColumnIndexOrThrow(ItemEntry.COLUMN_ID)),
-                        itemName = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_NAME)),
-                        itemDescription = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_DESCRIPTION)),
-                        itemPrice = it.getDouble(it.getColumnIndexOrThrow(ItemEntry.COLUMN_PRICE)),
-                        restaurantName = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_RESTAURANT_NAME)),
-                        restaurantID = it.getInt(it.getColumnIndexOrThrow(ItemEntry.COLUMN_RESTAURANT_ID)),
-                        imageUrl = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_IMAGE_URL))
-                    )
-                )
-            }
-        }
-        return items
-    }
-
-    /**
-     * Search items by name
-     */
-    fun searchItemsByName(itemName: String): List<Item> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            ItemEntry.TABLE_NAME,
-            null,
-            "${ItemEntry.COLUMN_NAME} LIKE ?",
-            arrayOf("%$itemName%"),
-            null,
-            null,
-            null
-        )
-        val items = mutableListOf<Item>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                items.add(
-                    Item(
-                        itemID = it.getInt(it.getColumnIndexOrThrow(ItemEntry.COLUMN_ID)),
-                        itemName = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_NAME)),
-                        itemDescription = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_DESCRIPTION)),
-                        itemPrice = it.getDouble(it.getColumnIndexOrThrow(ItemEntry.COLUMN_PRICE)),
-                        restaurantName = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_RESTAURANT_NAME)),
-                        restaurantID = it.getInt(it.getColumnIndexOrThrow(ItemEntry.COLUMN_RESTAURANT_ID)),
-                        imageUrl = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_IMAGE_URL))
-                    )
-                )
-            }
-        }
-        return items
-    }
-
-    /**
-     * Get items sorted by price
-     */
-    fun getItemsSortedByPrice(ascending: Boolean = true): List<Item> {
-        val db = dbHelper.readableDatabase
-        val orderBy = if (ascending) "${ItemEntry.COLUMN_PRICE} ASC" else "${ItemEntry.COLUMN_PRICE} DESC"
-        val cursor = db.query(
-            ItemEntry.TABLE_NAME,
-            null,
-            null,
-            null,
-            null,
-            null,
-            orderBy
-        )
-        val items = mutableListOf<Item>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                items.add(
-                    Item(
-                        itemID = it.getInt(it.getColumnIndexOrThrow(ItemEntry.COLUMN_ID)),
-                        itemName = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_NAME)),
-                        itemDescription = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_DESCRIPTION)),
-                        itemPrice = it.getDouble(it.getColumnIndexOrThrow(ItemEntry.COLUMN_PRICE)),
-                        restaurantName = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_RESTAURANT_NAME)),
-                        restaurantID = it.getInt(it.getColumnIndexOrThrow(ItemEntry.COLUMN_RESTAURANT_ID)),
-                        imageUrl = it.getString(it.getColumnIndexOrThrow(ItemEntry.COLUMN_IMAGE_URL))
-                    )
-                )
-            }
-        }
-        return items
-    }
-
-    /**
-     * Update an item
-     */
-    fun updateItem(item: Item): Int {
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put(ItemEntry.COLUMN_NAME, item.itemName)
-            put(ItemEntry.COLUMN_DESCRIPTION, item.itemDescription)
-            put(ItemEntry.COLUMN_PRICE, item.itemPrice)
-            put(ItemEntry.COLUMN_RESTAURANT_NAME, item.restaurantName)
-            put(ItemEntry.COLUMN_RESTAURANT_ID, item.restaurantID)
-            put(ItemEntry.COLUMN_IMAGE_URL, item.imageUrl)
-        }
-        return db.update(
-            ItemEntry.TABLE_NAME,
-            values,
-            "${ItemEntry.COLUMN_ID} = ?",
-            arrayOf(item.itemID.toString())
-        )
-    }
-
-    /**
-     * Delete an item
-     */
-    fun deleteItem(itemId: Int): Int {
-        val db = dbHelper.writableDatabase
-        return db.delete(
-            ItemEntry.TABLE_NAME,
-            "${ItemEntry.COLUMN_ID} = ?",
-            arrayOf(itemId.toString())
-        )
-    }
-
-    // ========== MASTER ORDER OPERATIONS ==========
-
-    /**
-     * Insert a new master order
-     */
-    fun insertMasterOrder(
-        userEmail: String,
-        usercode: String,
-        restaurantId: Int,
-        grandTotal: Double
-    ): Long {
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put(MasterOrderEntry.COLUMN_USER_EMAIL, userEmail)
-            put(MasterOrderEntry.COLUMN_USER_CODE, usercode)
-            put(MasterOrderEntry.COLUMN_RESTAURANT_ID, restaurantId)
-            put(MasterOrderEntry.COLUMN_GRAND_TOTAL, grandTotal)
-        }
-        return db.insert(MasterOrderEntry.TABLE_NAME, null, values)
-    }
-
-    /**
-     * Retrieve a master order by ID
-     */
-    fun getMasterOrderById(masterId: Int): MasterOrder? {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            MasterOrderEntry.TABLE_NAME,
-            null,
-            "${MasterOrderEntry.COLUMN_ID} = ?",
-            arrayOf(masterId.toString()),
-            null,
-            null,
-            null
-        )
-
-        return cursor.use {
-            if (it.moveToFirst()) {
-                MasterOrder(
-                    masterID = it.getInt(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_ID)),
-                    userID = it.getString(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_USER_EMAIL)),
-                    usercode = it.getString(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_USER_CODE)),
-                    restaurantID = it.getInt(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_RESTAURANT_ID)),
-                    grandtotal = it.getDouble(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_GRAND_TOTAL))
-                )
-            } else {
-                null
-            }
-        }
-    }
-
-    /**
-     * Retrieve all master orders for a user
-     */
-    fun getMasterOrdersByUser(userEmail: String): List<MasterOrder> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            MasterOrderEntry.TABLE_NAME,
-            null,
-            "${MasterOrderEntry.COLUMN_USER_EMAIL} = ?",
-            arrayOf(userEmail),
-            null,
-            null,
-            null
-        )
-        val masterOrders = mutableListOf<MasterOrder>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                masterOrders.add(
-                    MasterOrder(
-                        masterID = it.getInt(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_ID)),
-                        userID = it.getString(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_USER_EMAIL)),
-                        usercode = it.getString(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_USER_CODE)),
-                        restaurantID = it.getInt(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_RESTAURANT_ID)),
-                        grandtotal = it.getDouble(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_GRAND_TOTAL))
-                    )
-                )
-            }
-        }
-        return masterOrders
-    }
-
-    /**
-     * Retrieve all master orders
-     */
-    fun getAllMasterOrders(): List<MasterOrder> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(MasterOrderEntry.TABLE_NAME, null, null, null, null, null, null)
-        val masterOrders = mutableListOf<MasterOrder>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                masterOrders.add(
-                    MasterOrder(
-                        masterID = it.getInt(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_ID)),
-                        userID = it.getString(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_USER_EMAIL)),
-                        usercode = it.getString(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_USER_CODE)),
-                        restaurantID = it.getInt(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_RESTAURANT_ID)),
-                        grandtotal = it.getDouble(it.getColumnIndexOrThrow(MasterOrderEntry.COLUMN_GRAND_TOTAL))
-                    )
-                )
-            }
-        }
-        return masterOrders
-    }
-
-    /**
-     * Delete a master order
-     */
-    fun deleteMasterOrder(masterId: Int): Int {
-        val db = dbHelper.writableDatabase
-        return db.delete(
-            MasterOrderEntry.TABLE_NAME,
-            "${MasterOrderEntry.COLUMN_ID} = ?",
-            arrayOf(masterId.toString())
-        )
-    }
-
-    // ========== ORDER OPERATIONS ==========
-
-    /**
-     * Insert a new individual order
-     */
-    fun insertOrder(
-        userEmail: String,
-        itemName: String,
-        quantity: Int,
-        itemPrice: Double,
-        totalPrice: Double,
-        masterId: Int
-    ): Long {
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put(OrderEntry.COLUMN_USER_EMAIL, userEmail)
-            put(OrderEntry.COLUMN_ITEM_NAME, itemName)
-            put(OrderEntry.COLUMN_QUANTITY, quantity)
-            put(OrderEntry.COLUMN_ITEM_PRICE, itemPrice)
-            put(OrderEntry.COLUMN_TOTAL_PRICE, totalPrice)
-            put(OrderEntry.COLUMN_MASTER_ID, masterId)
-        }
-        return db.insert(OrderEntry.TABLE_NAME, null, values)
-    }
-
-    /**
-     * Retrieve an individual order by ID
-     */
-    fun getOrderById(orderId: Int): Order? {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            OrderEntry.TABLE_NAME,
-            null,
-            "${OrderEntry.COLUMN_ID} = ?",
-            arrayOf(orderId.toString()),
-            null,
-            null,
-            null
-        )
-
-        return cursor.use {
-            if (it.moveToFirst()) {
-                Order(
-                    orderID = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ID)),
-                    userID = it.getString(it.getColumnIndexOrThrow(OrderEntry.COLUMN_USER_EMAIL)),
-                    itemName = it.getString(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ITEM_NAME)),
-                    quantity = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_QUANTITY)),
-                    itemPrice = it.getDouble(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ITEM_PRICE)),
-                    totalPrice = it.getDouble(it.getColumnIndexOrThrow(OrderEntry.COLUMN_TOTAL_PRICE)),
-                    masterID = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_MASTER_ID))
-                )
-            } else {
-                null
-            }
-        }
-    }
-
-    /**
-     * Retrieve all individual orders associated with a specific master order ID.
-     * Supports the 'Read' operation for relational data.
-     */
-    fun getOrdersByMasterId(masterId: Int): List<Order> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            OrderEntry.TABLE_NAME,
-            null,
-            "${OrderEntry.COLUMN_MASTER_ID} = ?",
-            arrayOf(masterId.toString()),
+            "${QuickBiteContract.UserEntry.COLUMN_USERNAME}=? AND ${QuickBiteContract.UserEntry.COLUMN_PASSWORD}=?",
+            arrayOf(username, password),
             null, null, null
         )
-        val orders = mutableListOf<Order>()
-        cursor.use {
-            while (it.moveToNext()) {
-                orders.add(
-                    Order(
-                        orderID = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ID)),
-                        userID = it.getString(it.getColumnIndexOrThrow(OrderEntry.COLUMN_USER_EMAIL)),
-                        itemName = it.getString(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ITEM_NAME)),
-                        quantity = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_QUANTITY)),
-                        itemPrice = it.getDouble(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ITEM_PRICE)),
-                        totalPrice = it.getDouble(it.getColumnIndexOrThrow(OrderEntry.COLUMN_TOTAL_PRICE)),
-                        masterID = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_MASTER_ID))
-                    )
-                )
-            }
-        }
-        return orders
-    }
-
-    /**
-     * Retrieve all orders for a user
-     */
-    fun getOrdersByUser(userEmail: String): List<Order> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            OrderEntry.TABLE_NAME,
-            null,
-            "${OrderEntry.COLUMN_USER_EMAIL} = ?",
-            arrayOf(userEmail),
-            null,
-            null,
+        val result = if (cursor.moveToFirst()) {
+            mapOf(
+                QuickBiteContract.UserEntry.COLUMN_USER_ID to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.UserEntry.COLUMN_USER_ID)),
+                QuickBiteContract.UserEntry.COLUMN_USERNAME to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.UserEntry.COLUMN_USERNAME)),
+                QuickBiteContract.UserEntry.COLUMN_PASSWORD to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.UserEntry.COLUMN_PASSWORD))
+            )
+        } else {
             null
-        )
-        val orders = mutableListOf<Order>()
-
-        cursor.use {
-            while (it.moveToNext()) {
-                orders.add(
-                    Order(
-                        orderID = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ID)),
-                        userID = it.getString(it.getColumnIndexOrThrow(OrderEntry.COLUMN_USER_EMAIL)),
-                        itemName = it.getString(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ITEM_NAME)),
-                        quantity = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_QUANTITY)),
-                        itemPrice = it.getDouble(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ITEM_PRICE)),
-                        totalPrice = it.getDouble(it.getColumnIndexOrThrow(OrderEntry.COLUMN_TOTAL_PRICE)),
-                        masterID = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_MASTER_ID))
-                    )
-                )
-            }
         }
-        return orders
+        cursor.close()
+        return result
     }
+    
+    
 
     /**
-     * Retrieve all orders
+     * Gets a user by their ID.
      */
-    fun getAllOrders(): List<Order> {
+    fun getUserById(userID: Long): Map<String, Any?>? {
         val db = dbHelper.readableDatabase
-        val cursor = db.query(OrderEntry.TABLE_NAME, null, null, null, null, null, null)
-        val orders = mutableListOf<Order>()
+        val cursor: Cursor = db.query(
+            QuickBiteContract.UserEntry.TABLE_NAME,
+            null,
+            "${QuickBiteContract.UserEntry.COLUMN_USER_ID}=?",
+            arrayOf(userID.toString()),
+            null, null, null
+        )
+        val result = if (cursor.moveToFirst()) {
+            mapOf(
+                QuickBiteContract.UserEntry.COLUMN_USER_ID to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.UserEntry.COLUMN_USER_ID)),
+                QuickBiteContract.UserEntry.COLUMN_USERNAME to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.UserEntry.COLUMN_USERNAME)),
+                QuickBiteContract.UserEntry.COLUMN_PASSWORD to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.UserEntry.COLUMN_PASSWORD))
+            )
+        } else {
+            null
+        }
+        cursor.close()
+        return result
+    }
 
-        cursor.use {
-            while (it.moveToNext()) {
-                orders.add(
-                    Order(
-                        orderID = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ID)),
-                        userID = it.getString(it.getColumnIndexOrThrow(OrderEntry.COLUMN_USER_EMAIL)),
-                        itemName = it.getString(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ITEM_NAME)),
-                        quantity = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_QUANTITY)),
-                        itemPrice = it.getDouble(it.getColumnIndexOrThrow(OrderEntry.COLUMN_ITEM_PRICE)),
-                        totalPrice = it.getDouble(it.getColumnIndexOrThrow(OrderEntry.COLUMN_TOTAL_PRICE)),
-                        masterID = it.getInt(it.getColumnIndexOrThrow(OrderEntry.COLUMN_MASTER_ID))
-                    )
-                )
+    /**
+     * Syncs/upserts a user to the local database.
+     */
+    fun syncUser(user: Map<String, Any?>): Long {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(QuickBiteContract.UserEntry.COLUMN_USER_ID, (user["userID"] as? Number)?.toLong())
+            put(QuickBiteContract.UserEntry.COLUMN_USERNAME, user["username"] as? String)
+            put(QuickBiteContract.UserEntry.COLUMN_PASSWORD, user["password"] as? String)
+        }
+        return db.insertWithOnConflict(
+            QuickBiteContract.UserEntry.TABLE_NAME,
+            null,
+            values,
+            SQLiteDatabase.CONFLICT_REPLACE
+        )
+    }
+
+    /**
+     * Logs out a user by deleting them from the local database.
+     * Returns the number of rows deleted.
+     */
+    fun logoutUser(userID: Long): Int {
+        val db = dbHelper.writableDatabase
+        return db.delete(
+            QuickBiteContract.UserEntry.TABLE_NAME,
+            "${QuickBiteContract.UserEntry.COLUMN_USER_ID}=?",
+            arrayOf(userID.toString())
+        )
+    }
+
+    /**
+     * Gets the current user's ID from the local database.
+     * Since only one user exists locally at a time, returns the first available user's ID.
+     * Returns null if no user is currently logged in.
+     */
+    fun getCurrentUserId(): Long? {
+        val db = dbHelper.readableDatabase
+        val cursor: Cursor = db.query(
+            QuickBiteContract.UserEntry.TABLE_NAME,
+            arrayOf(QuickBiteContract.UserEntry.COLUMN_USER_ID),
+            null, null, null, null,
+            "${QuickBiteContract.UserEntry.COLUMN_USER_ID} LIMIT 1"
+        )
+        val result = if (cursor.moveToFirst()) {
+            cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.UserEntry.COLUMN_USER_ID))
+        } else {
+            null
+        }
+        cursor.close()
+        return result
+    }
+
+    fun getCurrentUser(): User? {
+        val db = dbHelper.readableDatabase
+        val cursor: Cursor = db.query(
+            QuickBiteContract.UserEntry.TABLE_NAME,
+            null, null, null, null, null,
+            "${QuickBiteContract.UserEntry.COLUMN_USER_ID} LIMIT 1"
+        )
+        val user = if (cursor.moveToFirst()) {
+            User(
+                userID = cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.UserEntry.COLUMN_USER_ID)),
+                username = cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.UserEntry.COLUMN_USERNAME)),
+                password = cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.UserEntry.COLUMN_PASSWORD))
+            )
+        } else {
+            null
+        }
+        cursor.close()
+        return user
+    }
+
+    // =========================
+    // RETRIEVAL OPERATIONS
+    // =========================
+
+    fun getAllRestaurants(): List<Map<String, Any?>> {
+        val db = dbHelper.readableDatabase
+        val list = mutableListOf<Map<String, Any?>>()
+        val cursor = db.query(QuickBiteContract.RestaurantEntry.TABLE_NAME, null, null, null, null, null, null)
+        while (cursor.moveToNext()) {
+            list.add(mapOf(
+                QuickBiteContract.RestaurantEntry.COLUMN_RESTAURANT_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_RESTAURANT_ID)),
+                QuickBiteContract.RestaurantEntry.COLUMN_NAME to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_NAME)),
+                QuickBiteContract.RestaurantEntry.COLUMN_IMAGE_URL to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_IMAGE_URL)),
+                QuickBiteContract.RestaurantEntry.COLUMN_CATEGORY to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_CATEGORY)),
+                QuickBiteContract.RestaurantEntry.COLUMN_RATING to cursor.getDouble(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_RATING)),
+                QuickBiteContract.RestaurantEntry.COLUMN_DELIVERY_TIME to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_DELIVERY_TIME))
+            ))
+        }
+        cursor.close()
+        return list
+    }
+
+    /**
+     * Gets a single restaurant by its ID from the local database.
+     */
+    fun getRestaurantById(restaurantID: Int): Map<String, Any?>? {
+        val db = dbHelper.readableDatabase
+        val cursor: Cursor = db.query(
+            QuickBiteContract.RestaurantEntry.TABLE_NAME,
+            null,
+            "${QuickBiteContract.RestaurantEntry.COLUMN_RESTAURANT_ID}=?",
+            arrayOf(restaurantID.toString()),
+            null, null, null
+        )
+        val result = if (cursor.moveToFirst()) {
+            mapOf(
+                QuickBiteContract.RestaurantEntry.COLUMN_RESTAURANT_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_RESTAURANT_ID)),
+                QuickBiteContract.RestaurantEntry.COLUMN_NAME to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_NAME)),
+                QuickBiteContract.RestaurantEntry.COLUMN_IMAGE_URL to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_IMAGE_URL)),
+                QuickBiteContract.RestaurantEntry.COLUMN_CATEGORY to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_CATEGORY)),
+                QuickBiteContract.RestaurantEntry.COLUMN_RATING to cursor.getDouble(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_RATING)),
+                QuickBiteContract.RestaurantEntry.COLUMN_DELIVERY_TIME to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.RestaurantEntry.COLUMN_DELIVERY_TIME))
+            )
+        } else {
+            null
+        }
+        cursor.close()
+        return result
+    }
+
+    fun getAllItems(): List<Map<String, Any?>> {
+        val db = dbHelper.readableDatabase
+        val list = mutableListOf<Map<String, Any?>>()
+        val cursor = db.query(QuickBiteContract.ItemEntry.TABLE_NAME, null, null, null, null, null, null)
+        while (cursor.moveToNext()) {
+            list.add(mapOf(
+                QuickBiteContract.ItemEntry.COLUMN_ITEM_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_ITEM_ID)),
+                QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_ID)),
+                QuickBiteContract.ItemEntry.COLUMN_NAME to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_NAME)),
+                QuickBiteContract.ItemEntry.COLUMN_DESCRIPTION to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_DESCRIPTION)),
+                QuickBiteContract.ItemEntry.COLUMN_IMAGE_URL to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_IMAGE_URL)),
+                QuickBiteContract.ItemEntry.COLUMN_TYPE_LABEL to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_TYPE_LABEL)),
+                QuickBiteContract.ItemEntry.COLUMN_PRICE to cursor.getDouble(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_PRICE)),
+                QuickBiteContract.ItemEntry.COLUMN_ITEM_RATING to cursor.getDouble(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_ITEM_RATING))
+            ))
+        }
+        cursor.close()
+        return list
+    }
+
+    /**
+     * Gets a single item by its ID from the local database.
+     */
+    fun getItemById(itemID: Int): Map<String, Any?>? {
+        val db = dbHelper.readableDatabase
+        val cursor: Cursor = db.query(
+            QuickBiteContract.ItemEntry.TABLE_NAME,
+            null,
+            "${QuickBiteContract.ItemEntry.COLUMN_ITEM_ID}=?",
+            arrayOf(itemID.toString()),
+            null, null, null
+        )
+        val result = if (cursor.moveToFirst()) {
+            mapOf(
+                QuickBiteContract.ItemEntry.COLUMN_ITEM_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_ITEM_ID)),
+                QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_ID)),
+                QuickBiteContract.ItemEntry.COLUMN_NAME to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_NAME)),
+                QuickBiteContract.ItemEntry.COLUMN_DESCRIPTION to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_DESCRIPTION)),
+                QuickBiteContract.ItemEntry.COLUMN_IMAGE_URL to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_IMAGE_URL)),
+                QuickBiteContract.ItemEntry.COLUMN_TYPE_LABEL to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_TYPE_LABEL)),
+                QuickBiteContract.ItemEntry.COLUMN_PRICE to cursor.getDouble(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_PRICE)),
+                QuickBiteContract.ItemEntry.COLUMN_ITEM_RATING to cursor.getDouble(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_ITEM_RATING))
+            )
+        } else {
+            null
+        }
+        cursor.close()
+        return result
+    }
+
+    /**
+     * Gets all items belonging to a specific restaurant from the local database.
+     */
+    fun getItemsByRestaurant(restaurantID: Int): List<Map<String, Any?>> {
+        val db = dbHelper.readableDatabase
+        val list = mutableListOf<Map<String, Any?>>()
+        val cursor: Cursor = db.query(
+            QuickBiteContract.ItemEntry.TABLE_NAME,
+            null,
+            "${QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_ID}=?",
+            arrayOf(restaurantID.toString()),
+            null, null, null
+        )
+        while (cursor.moveToNext()) {
+            list.add(mapOf(
+                QuickBiteContract.ItemEntry.COLUMN_ITEM_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_ITEM_ID)),
+                QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_ID)),
+                QuickBiteContract.ItemEntry.COLUMN_NAME to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_NAME)),
+                QuickBiteContract.ItemEntry.COLUMN_DESCRIPTION to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_DESCRIPTION)),
+                QuickBiteContract.ItemEntry.COLUMN_IMAGE_URL to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_IMAGE_URL)),
+                QuickBiteContract.ItemEntry.COLUMN_TYPE_LABEL to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_TYPE_LABEL)),
+                QuickBiteContract.ItemEntry.COLUMN_PRICE to cursor.getDouble(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_PRICE)),
+                QuickBiteContract.ItemEntry.COLUMN_ITEM_RATING to cursor.getDouble(cursor.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_ITEM_RATING))
+            ))
+        }
+        cursor.close()
+        return list
+    }
+
+    // =========================
+// CART OPERATIONS
+// =========================
+
+    fun addToCart(userID: Long, itemID: Int, quantity: Int): Long {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(QuickBiteContract.CartEntry.COLUMN_USER_ID, userID)
+            put(QuickBiteContract.CartEntry.COLUMN_ITEM_ID, itemID)
+            put(QuickBiteContract.CartEntry.COLUMN_QUANTITY, quantity)
+        }
+        return db.insertWithOnConflict(
+            QuickBiteContract.CartEntry.TABLE_NAME,
+            null,
+            values,
+            SQLiteDatabase.CONFLICT_REPLACE
+        )
+    }
+
+    /**
+     * Syncs the entire cart for a user from the remote server.
+     * Clears existing local cart and replaces with synced data.
+     */
+    fun syncCart(userID: Long, items: Map<String, Int>) {
+        val db = dbHelper.writableDatabase
+        db.transaction {
+            // Clear existing cart for this user
+            delete(
+                QuickBiteContract.CartEntry.TABLE_NAME,
+                "${QuickBiteContract.CartEntry.COLUMN_USER_ID}=?",
+                arrayOf(userID.toString())
+            )
+            // Insert all items from the map
+            items.forEach { (itemIDStr, quantity) ->
+                val itemID = itemIDStr.toIntOrNull() ?: return@forEach
+                val values = ContentValues().apply {
+                    put(QuickBiteContract.CartEntry.COLUMN_USER_ID, userID)
+                    put(QuickBiteContract.CartEntry.COLUMN_ITEM_ID, itemID)
+                    put(QuickBiteContract.CartEntry.COLUMN_QUANTITY, quantity)
+                }
+                insert(QuickBiteContract.CartEntry.TABLE_NAME, null, values)
             }
         }
-        return orders
     }
 
-    /**
-     * Delete an individual order
-     */
-    fun deleteOrder(orderId: Int): Int {
-        val db = dbHelper.writableDatabase
-        return db.delete(
-            OrderEntry.TABLE_NAME,
-            "${OrderEntry.COLUMN_ID} = ?",
-            arrayOf(orderId.toString())
-        )
-    }
-
-    /**
-     * Delete all orders in a master order
-     */
-    fun deleteOrdersByMasterId(masterId: Int): Int {
-        val db = dbHelper.writableDatabase
-        return db.delete(
-            OrderEntry.TABLE_NAME,
-            "${OrderEntry.COLUMN_MASTER_ID} = ?",
-            arrayOf(masterId.toString())
-        )
-    }
-
-    // ========== LOCAL CART OPERATIONS ==========
-
-    fun addOrUpdateCartItem(itemId: Int, restaurantId: Int) {
-        val db = dbHelper.writableDatabase
+    fun getCart(userID: Long): List<Map<String, Any?>> {
+        val db = dbHelper.readableDatabase
+        val list = mutableListOf<Map<String, Any?>>()
         val cursor = db.query(
             QuickBiteContract.CartEntry.TABLE_NAME,
-            arrayOf(QuickBiteContract.CartEntry.COLUMN_QUANTITY),
-            "${QuickBiteContract.CartEntry.COLUMN_ITEM_ID} = ?",
-            arrayOf(itemId.toString()), null, null, null
+            null,
+            "${QuickBiteContract.CartEntry.COLUMN_USER_ID}=?",
+            arrayOf(userID.toString()),
+            null, null, null
         )
-
-        var currentQty = 0
-        if (cursor.moveToFirst()) currentQty = cursor.getInt(0)
-        cursor.close()
-
-        val values = ContentValues().apply {
-            put(QuickBiteContract.CartEntry.COLUMN_ITEM_ID, itemId)
-            put(QuickBiteContract.CartEntry.COLUMN_RESTAURANT_ID, restaurantId)
-            put(QuickBiteContract.CartEntry.COLUMN_QUANTITY, currentQty + 1)
-        }
-
-        if (currentQty == 0) db.insert(QuickBiteContract.CartEntry.TABLE_NAME, null, values)
-        else db.update(QuickBiteContract.CartEntry.TABLE_NAME, values, "${QuickBiteContract.CartEntry.COLUMN_ITEM_ID} = ?", arrayOf(itemId.toString()))
-    }
-
-    fun decreaseCartItem(itemId: Int) {
-        val db = dbHelper.writableDatabase
-        val cursor = db.query(QuickBiteContract.CartEntry.TABLE_NAME, arrayOf(QuickBiteContract.CartEntry.COLUMN_QUANTITY), "${QuickBiteContract.CartEntry.COLUMN_ITEM_ID} = ?", arrayOf(itemId.toString()), null, null, null)
-
-        if (cursor.moveToFirst()) {
-            val qty = cursor.getInt(0)
-            if (qty > 1) {
-                val values = ContentValues().apply { put(QuickBiteContract.CartEntry.COLUMN_QUANTITY, qty - 1) }
-                db.update(QuickBiteContract.CartEntry.TABLE_NAME, values, "${QuickBiteContract.CartEntry.COLUMN_ITEM_ID} = ?", arrayOf(itemId.toString()))
-            } else {
-                removeCartItem(itemId)
-            }
+        while (cursor.moveToNext()) {
+            list.add(mapOf(
+                QuickBiteContract.CartEntry.COLUMN_USER_ID to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.CartEntry.COLUMN_USER_ID)),
+                QuickBiteContract.CartEntry.COLUMN_ITEM_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.CartEntry.COLUMN_ITEM_ID)),
+                QuickBiteContract.CartEntry.COLUMN_QUANTITY to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.CartEntry.COLUMN_QUANTITY))
+            ))
         }
         cursor.close()
-    }
-
-    fun removeCartItem(itemId: Int) {
-        dbHelper.writableDatabase.delete(QuickBiteContract.CartEntry.TABLE_NAME, "${QuickBiteContract.CartEntry.COLUMN_ITEM_ID} = ?", arrayOf(itemId.toString()))
-    }
-
-    fun clearCart() {
-        dbHelper.writableDatabase.delete(QuickBiteContract.CartEntry.TABLE_NAME, null, null)
-    }
-
-    fun getCartItemCount(): Int {
-        val cursor = dbHelper.readableDatabase.rawQuery("SELECT SUM(${QuickBiteContract.CartEntry.COLUMN_QUANTITY}) FROM ${QuickBiteContract.CartEntry.TABLE_NAME}", null)
-        var count = 0
-        if (cursor.moveToFirst()) count = cursor.getInt(0)
-        cursor.close()
-        return count
-    }
-
-    fun getCartLineItems(): List<Pair<Item, Int>> {
-        val db = dbHelper.readableDatabase
-        val query = """
-            SELECT c.${QuickBiteContract.CartEntry.COLUMN_QUANTITY}, i.* FROM ${QuickBiteContract.CartEntry.TABLE_NAME} c 
-            INNER JOIN ${QuickBiteContract.ItemEntry.TABLE_NAME} i ON c.${QuickBiteContract.CartEntry.COLUMN_ITEM_ID} = i.${QuickBiteContract.ItemEntry.COLUMN_ID}
-        """.trimIndent()
-
-        val items = mutableListOf<Pair<Item, Int>>()
-        val cursor = db.rawQuery(query, null)
-        cursor.use {
-            while (it.moveToNext()) {
-                val qty = it.getInt(0)
-                val item = Item(
-                    itemID = it.getInt(it.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_ID)),
-                    itemName = it.getString(it.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_NAME)),
-                    itemDescription = it.getString(it.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_DESCRIPTION)),
-                    itemPrice = it.getDouble(it.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_PRICE)),
-                    restaurantName = it.getString(it.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_NAME)),
-                    restaurantID = it.getInt(it.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_RESTAURANT_ID)),
-                    imageUrl = it.getString(it.getColumnIndexOrThrow(QuickBiteContract.ItemEntry.COLUMN_IMAGE_URL))
-                )
-                items.add(Pair(item, qty))
-            }
-        }
-        return items
+        return list
     }
 
     /**
-     * Close the database helper
+     * Gets a specific cart item for a user.
      */
+    fun getCartItem(userID: Long, itemID: Int): Map<String, Any?>? {
+        val db = dbHelper.readableDatabase
+        val cursor: Cursor = db.query(
+            QuickBiteContract.CartEntry.TABLE_NAME,
+            null,
+            "${QuickBiteContract.CartEntry.COLUMN_USER_ID}=? AND ${QuickBiteContract.CartEntry.COLUMN_ITEM_ID}=?",
+            arrayOf(userID.toString(), itemID.toString()),
+            null, null, null
+        )
+        val result = if (cursor.moveToFirst()) {
+            mapOf(
+                QuickBiteContract.CartEntry.COLUMN_USER_ID to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.CartEntry.COLUMN_USER_ID)),
+                QuickBiteContract.CartEntry.COLUMN_ITEM_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.CartEntry.COLUMN_ITEM_ID)),
+                QuickBiteContract.CartEntry.COLUMN_QUANTITY to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.CartEntry.COLUMN_QUANTITY))
+            )
+        } else {
+            null
+        }
+        cursor.close()
+        return result
+    }
+
+    fun removeCartItem(userID: Long, itemID: Int): Int {
+        val db = dbHelper.writableDatabase
+        return db.delete(
+            QuickBiteContract.CartEntry.TABLE_NAME,
+            "${QuickBiteContract.CartEntry.COLUMN_USER_ID}=? AND ${QuickBiteContract.CartEntry.COLUMN_ITEM_ID}=?",
+            arrayOf(userID.toString(), itemID.toString())
+        )
+    }
+
+    fun clearCart(userID: Long): Int {
+        val db = dbHelper.writableDatabase
+        return db.delete(
+            QuickBiteContract.CartEntry.TABLE_NAME,
+            "${QuickBiteContract.CartEntry.COLUMN_USER_ID}=?",
+            arrayOf(userID.toString())
+        )
+    }
+
+    // =========================
+// ORDER OPERATIONS
+// =========================
+
+    /**
+     * Creates a new order in the local database.
+     * Returns the row ID of the inserted order.
+     */
+    fun createOrder(userID: Long, orderItemsJson: String, orderStatus: String = "PENDING"): Long {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(QuickBiteContract.OrderEntry.COLUMN_USER_ID, userID)
+            put(QuickBiteContract.OrderEntry.COLUMN_ORDER_ITEMS, orderItemsJson)
+            put(QuickBiteContract.OrderEntry.COLUMN_ORDER_STATUS, orderStatus)
+            put(QuickBiteContract.OrderEntry.COLUMN_CREATED_AT, System.currentTimeMillis())
+        }
+        return db.insert(QuickBiteContract.OrderEntry.TABLE_NAME, null, values)
+    }
+
+    /**
+     * Syncs an order from the remote server into the local database (upsert).
+     * FIXED: Properly converts userID to Long and verifies it exists
+     */
+    fun syncOrder(order: Map<String, Any?>): Long {
+        val db = dbHelper.writableDatabase
+
+        // Extract and validate userID
+        val userID = when (val id = order["userID"]) {
+            is Number -> id.toLong()
+            is String -> id.toLongOrNull()
+            else -> null
+        }
+
+        if (userID == null) {
+            throw IllegalArgumentException("Invalid or missing userID in order: ${order["userID"]}")
+        }
+
+        // Verify user exists before inserting order
+        val userExists = db.query(
+            QuickBiteContract.UserEntry.TABLE_NAME,
+            arrayOf(QuickBiteContract.UserEntry.COLUMN_USER_ID),
+            "${QuickBiteContract.UserEntry.COLUMN_USER_ID}=?",
+            arrayOf(userID.toString()),
+            null, null, null
+        ).use { cursor ->
+            cursor.moveToFirst()
+        }
+
+        if (!userExists) {
+            android.util.Log.e("QuickBiteDB", "User $userID not found when syncing order")
+            return -1
+        }
+
+        // Extract totalAmount - handle both Number and Double
+        val totalAmount = when (val amount = order["totalAmount"]) {
+            is Number -> amount.toDouble()
+            is String -> amount.toDoubleOrNull() ?: 0.0
+            else -> 0.0
+        }
+
+        val values = ContentValues().apply {
+            put(QuickBiteContract.OrderEntry.COLUMN_ORDER_ID, (order["orderID"] as? Number)?.toLong())
+            put(QuickBiteContract.OrderEntry.COLUMN_USER_ID, userID)
+            // Convert orderItems properly - handle both Map and String
+            val orderItemsStr = when (val items = order["orderItems"]) {
+                is Map<*, *> -> {
+                    // Convert Map to proper JSON string format
+                    val jsonMap = items.mapKeys { it.key.toString() }
+                        .mapValues { it.value.toString() }
+                    jsonMap.toString()
+                }
+                is String -> items
+                else -> order["orderItems"]?.toString() ?: "{}"
+            }
+            put(QuickBiteContract.OrderEntry.COLUMN_ORDER_ITEMS, orderItemsStr)
+            put(QuickBiteContract.OrderEntry.COLUMN_ORDER_STATUS, order["orderStatus"] as? String ?: "PENDING")
+            put(QuickBiteContract.OrderEntry.COLUMN_CREATED_AT, (order["createdAt"] as? Number)?.toLong() ?: System.currentTimeMillis())
+            put(QuickBiteContract.OrderEntry.COLUMN_TOTAL_AMOUNT, totalAmount)  // Add totalAmount
+        }
+
+        android.util.Log.d("QuickBiteDB", "Saving order: ID=${order["orderID"]}, User=$userID, Total=$totalAmount")
+
+        return db.insertWithOnConflict(
+            QuickBiteContract.OrderEntry.TABLE_NAME,
+            null,
+            values,
+            SQLiteDatabase.CONFLICT_REPLACE
+        )
+    }
+
+
+    /**
+     * Syncs all orders for a user by clearing existing and replacing with network data.
+     */
+    fun syncUserOrders(userID: Long, orders: List<Map<String, Any?>>) {
+        val db = dbHelper.writableDatabase
+        db.transaction {
+            // First verify user exists
+            val userExists = db.query(
+                QuickBiteContract.UserEntry.TABLE_NAME,
+                arrayOf(QuickBiteContract.UserEntry.COLUMN_USER_ID),
+                "${QuickBiteContract.UserEntry.COLUMN_USER_ID}=?",
+                arrayOf(userID.toString()),
+                null, null, null
+            ).use { cursor -> cursor.moveToFirst() }
+
+            if (!userExists) {
+                android.util.Log.e("QuickBiteDB", "Cannot sync orders: User $userID not found")
+                return@transaction
+            }
+
+            // Delete existing orders for this user
+            delete(
+                QuickBiteContract.OrderEntry.TABLE_NAME,
+                "${QuickBiteContract.OrderEntry.COLUMN_USER_ID}=?",
+                arrayOf(userID.toString())
+            )
+
+            // Insert all orders
+            orders.forEach { order ->
+                val values = ContentValues().apply {
+                    put(QuickBiteContract.OrderEntry.COLUMN_ORDER_ID, (order["orderID"] as? Number)?.toLong())
+                    put(QuickBiteContract.OrderEntry.COLUMN_USER_ID, userID)
+                    val orderItemsStr = when (val items = order["orderItems"]) {
+                        is Map<*, *> -> items.toString()
+                        is String -> items
+                        else -> order["orderItems"]?.toString() ?: "{}"
+                    }
+                    put(QuickBiteContract.OrderEntry.COLUMN_ORDER_ITEMS, orderItemsStr)
+                    put(QuickBiteContract.OrderEntry.COLUMN_TOTAL_AMOUNT, (order["totalAmount"] as? Number)?.toDouble() ?: 0.0)
+                    put(QuickBiteContract.OrderEntry.COLUMN_ORDER_STATUS, order["orderStatus"] as? String ?: "PENDING")
+                    put(QuickBiteContract.OrderEntry.COLUMN_CREATED_AT, (order["createdAt"] as? Number)?.toLong() ?: System.currentTimeMillis())
+                }
+                insert(QuickBiteContract.OrderEntry.TABLE_NAME, null, values)
+            }
+        }
+    }
+
+    /**
+     * Gets all orders for a specific user from the local database.
+     */
+    fun getUserOrders(userID: Long): List<Map<String, Any?>> {
+        val db = dbHelper.readableDatabase
+        val list = mutableListOf<Map<String, Any?>>()
+        val cursor: Cursor = db.query(
+            QuickBiteContract.OrderEntry.TABLE_NAME,
+            null,
+            "${QuickBiteContract.OrderEntry.COLUMN_USER_ID}=?",
+            arrayOf(userID.toString()),
+            null, null,
+            "${QuickBiteContract.OrderEntry.COLUMN_CREATED_AT} DESC"
+        )
+        while (cursor.moveToNext()) {
+            list.add(mapOf(
+                QuickBiteContract.OrderEntry.COLUMN_ORDER_ID to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_ORDER_ID)),
+                QuickBiteContract.OrderEntry.COLUMN_USER_ID to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_USER_ID)),
+                QuickBiteContract.OrderEntry.COLUMN_ORDER_ITEMS to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_ORDER_ITEMS)),
+                QuickBiteContract.OrderEntry.COLUMN_ORDER_STATUS to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_ORDER_STATUS)),
+                QuickBiteContract.OrderEntry.COLUMN_CREATED_AT to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_CREATED_AT)),
+                QuickBiteContract.OrderEntry.COLUMN_TOTAL_AMOUNT to cursor.getDouble(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_TOTAL_AMOUNT))
+            ))
+        }
+        cursor.close()
+        return list
+    }
+
+
+    /**
+     * Gets all orders from the local database.
+     */
+    fun getAllOrders(): List<Map<String, Any?>> {
+        val db = dbHelper.readableDatabase
+        val list = mutableListOf<Map<String, Any?>>()
+        val cursor: Cursor = db.query(
+            QuickBiteContract.OrderEntry.TABLE_NAME,
+            null, null, null, null, null,
+            "${QuickBiteContract.OrderEntry.COLUMN_CREATED_AT} DESC"
+        )
+        while (cursor.moveToNext()) {
+            list.add(mapOf(
+                QuickBiteContract.OrderEntry.COLUMN_ORDER_ID to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_ORDER_ID)),
+                QuickBiteContract.OrderEntry.COLUMN_USER_ID to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_USER_ID)),
+                QuickBiteContract.OrderEntry.COLUMN_ORDER_ITEMS to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_ORDER_ITEMS)),
+                QuickBiteContract.OrderEntry.COLUMN_ORDER_STATUS to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_ORDER_STATUS)),
+                QuickBiteContract.OrderEntry.COLUMN_CREATED_AT to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_CREATED_AT)),
+                QuickBiteContract.OrderEntry.COLUMN_TOTAL_AMOUNT to cursor.getDouble(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_TOTAL_AMOUNT))
+            ))
+        }
+        cursor.close()
+        return list
+    }
+
+    /**
+     * Gets a single order by its ID.
+     */
+    fun getOrderById(orderID: Long): Map<String, Any?>? {
+        val db = dbHelper.readableDatabase
+        val cursor: Cursor = db.query(
+            QuickBiteContract.OrderEntry.TABLE_NAME,
+            null,
+            "${QuickBiteContract.OrderEntry.COLUMN_ORDER_ID}=?",
+            arrayOf(orderID.toString()),
+            null, null, null
+        )
+        val result = if (cursor.moveToFirst()) {
+            mapOf(
+                QuickBiteContract.OrderEntry.COLUMN_ORDER_ID to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_ORDER_ID)),
+                QuickBiteContract.OrderEntry.COLUMN_USER_ID to cursor.getInt(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_USER_ID)),
+                QuickBiteContract.OrderEntry.COLUMN_ORDER_ITEMS to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_ORDER_ITEMS)),
+                QuickBiteContract.OrderEntry.COLUMN_ORDER_STATUS to cursor.getString(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_ORDER_STATUS)),
+                QuickBiteContract.OrderEntry.COLUMN_CREATED_AT to cursor.getLong(cursor.getColumnIndexOrThrow(QuickBiteContract.OrderEntry.COLUMN_CREATED_AT))
+            )
+        } else {
+            null
+        }
+        cursor.close()
+        return result
+    }
+
+    /**
+     * Cancels an order by removing it from the local database.
+     * Returns the number of rows deleted.
+     */
+    fun cancelOrder(orderID: Long): Int {
+        val db = dbHelper.writableDatabase
+        return db.delete(
+            QuickBiteContract.OrderEntry.TABLE_NAME,
+            "${QuickBiteContract.OrderEntry.COLUMN_ORDER_ID}=?",
+            arrayOf(orderID.toString())
+        )
+    }
+
+    /**
+     * Updates the status of an order in the local database.
+     */
+    fun updateOrderStatus(orderID: Long, status: String): Int {
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put(QuickBiteContract.OrderEntry.COLUMN_ORDER_STATUS, status)
+        }
+        return db.update(
+            QuickBiteContract.OrderEntry.TABLE_NAME,
+            values,
+            "${QuickBiteContract.OrderEntry.COLUMN_ORDER_ID}=?",
+            arrayOf(orderID.toString())
+        )
+    }
+
+    // =========================
+    // DATABASE LIFECYCLE
+    // =========================
+
     fun close() {
         dbHelper.close()
     }
