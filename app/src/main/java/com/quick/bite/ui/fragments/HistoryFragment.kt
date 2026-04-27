@@ -4,97 +4,115 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.chip.ChipGroup
 import com.quick.bite.R
-import com.quick.bite.repositories.SessionDataRepository
+import com.quick.bite.api.RetrofitClient
+import com.quick.bite.data.db.QuickBiteDatabaseManager
+import com.quick.bite.data.repository.QuickBiteRepository
+import com.quick.bite.model.MasterOrder
+import kotlinx.coroutines.launch
+import java.util.Locale
 
 class HistoryFragment : Fragment() {
-    private data class UiRefs(
-        val order1: View,
-        val order2: View,
-        val order3: View,
-        val order4: View,
-        val order5: View,
-        val monthlyTotal: TextView,
-        val totalOrders: TextView
-    )
+    private lateinit var progressBar: ProgressBar
+    private lateinit var orderViews: List<View>
+    private lateinit var tvTotalOrders: TextView
+    private lateinit var tvMonthlyTotal: TextView
 
-    private var ui: UiRefs? = null
+    private lateinit var repository: QuickBiteRepository
+    private val currentUserEmail = "tech@example.com"
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_history, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        ui = UiRefs(
-            order1 = view.findViewById(R.id.order_1),
-            order2 = view.findViewById(R.id.order_2),
-            order3 = view.findViewById(R.id.order_3),
-            order4 = view.findViewById(R.id.order_4),
-            order5 = view.findViewById(R.id.order_5),
-            monthlyTotal = view.findViewById(R.id.tv_monthly_total),
-            totalOrders = view.findViewById(R.id.tv_total_orders)
+
+        repository = QuickBiteRepository(RetrofitClient.getApiService(), QuickBiteDatabaseManager(requireContext()))
+
+        tvTotalOrders = view.findViewById(R.id.tv_total_orders)
+        tvMonthlyTotal = view.findViewById(R.id.tv_monthly_total)
+        progressBar = view.findViewById(R.id.pb_history_loading)
+
+        orderViews = listOf(
+            view.findViewById(R.id.order_1),
+            view.findViewById(R.id.order_2),
+            view.findViewById(R.id.order_3),
+            view.findViewById(R.id.order_4),
+            view.findViewById(R.id.order_5)
         )
-        setupOrderData()
     }
 
-    private fun setupOrderData() {
-        val ui = ui ?: return
+    override fun onResume() {
+        super.onResume()
+        loadOrderHistory()
+    }
 
-        val displayOrders = SessionDataRepository.getOrderLogs().take(5)
-        val orderViews = listOf(ui.order1, ui.order2, ui.order3, ui.order4, ui.order5)
+    private fun loadOrderHistory() {
+        progressBar.visibility = View.VISIBLE
 
-        orderViews.forEachIndexed { index, orderView ->
-            val order = displayOrders.getOrNull(index)
-            if (order == null) {
-                setupOrderItem(
-                    orderView,
-                    getString(R.string.placeholder_empty),
-                    getString(R.string.placeholder_empty),
-                    getString(R.string.placeholder_empty),
-                    getString(R.string.placeholder_empty)
-                )
-            } else {
-                setupOrderItem(orderView, order.date, order.restaurantName, order.details, order.total)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result = repository.getOrderHistory(currentUserEmail)
+            progressBar.visibility = View.GONE
+
+            result.onSuccess { masterOrders ->
+                renderMasterOrders(masterOrders)
+                updateSummary(masterOrders)
+            }.onFailure { error ->
+                Toast.makeText(context, "Sync Error: ${error.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
         }
-
-        val allOrders = SessionDataRepository.getOrderLogs()
-        val totalAmount = allOrders.sumOf { parseMoney(it.total) }
-        ui.monthlyTotal.text = SessionDataRepository.formatMoney(totalAmount)
-        ui.totalOrders.text = allOrders.size.toString()
     }
 
-    private fun setupOrderItem(
-        itemView: View,
-        date: String,
-        restaurant: String,
-        details: String,
-        total: String
-    ) {
-        itemView.findViewById<TextView>(R.id.tv_order_date).text = date
-        itemView.findViewById<TextView>(R.id.tv_restaurant_name).text = restaurant
-        itemView.findViewById<TextView>(R.id.tv_order_details).text = details
-        itemView.findViewById<TextView>(R.id.tv_order_total).text = total
-
-        itemView.setOnClickListener {
-            Toast.makeText(requireContext(), "Order: $restaurant", Toast.LENGTH_SHORT).show()
+    private fun renderMasterOrders(orders: List<MasterOrder>) {
+        orderViews.forEachIndexed { index, view ->
+            val order = orders.getOrNull(index)
+            if (order == null) {
+                view.visibility = View.GONE
+            } else {
+                view.visibility = View.VISIBLE
+                bindOrderView(view, order)
+            }
         }
     }
 
-    private fun parseMoney(value: String): Double {
-        return value.replace("$", "").trim().toDoubleOrNull() ?: 0.0
+    private fun bindOrderView(view: View, order: MasterOrder) {
+        view.findViewById<TextView>(R.id.tv_restaurant_name).text = "Order #${order.masterID}"
+        view.findViewById<TextView>(R.id.tv_order_total).text = formatCurrency(order.grandtotal)
+        view.findViewById<TextView>(R.id.tv_order_details).text = "Restaurant ID: ${order.restaurantID}"
+
+        view.findViewById<Button>(R.id.btn_cancel_order).setOnClickListener {
+            cancelOrder(order.masterID)
+        }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        ui = null
+    private fun cancelOrder(masterId: Int) {
+        progressBar.visibility = View.VISIBLE
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result = repository.cancelOrder(masterId)
+            progressBar.visibility = View.GONE
+
+            result.onSuccess {
+                Toast.makeText(context, "Order cancelled successfully", Toast.LENGTH_SHORT).show()
+                loadOrderHistory() // Refresh the UI after successful deletion
+            }.onFailure {
+                Toast.makeText(context, "Failed to cancel order.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
+
+    private fun updateSummary(orders: List<MasterOrder>) {
+        tvTotalOrders.text = orders.size.toString()
+        val totalAmount = orders.sumOf { it.grandtotal }
+        tvMonthlyTotal.text = formatCurrency(totalAmount)
+    }
+
+    private fun formatCurrency(amount: Double): String = String.format(Locale.US, "$%.2f", amount)
 }

@@ -1,13 +1,10 @@
-package com.quick.bite.models
-
-import java.io.Serializable
+package com.quick.bite.model
 
 data class Restaurant(
-    val id: Int,
-    val name: String,
-    val category: String,
-    val rating: String,
-    val deliveryTime: String,
-    val deliveryFee: String
-) : Serializable
+    val restaurantID: Int,
+    val restaurantName: String,
+    val address: String,
+    val type: String,
+    val parkingLot: Boolean
+)
 

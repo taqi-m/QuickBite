@@ -1,233 +1,262 @@
 package com.quick.bite.ui.checkout
 
-import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.View
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButton
 import com.quick.bite.R
-import com.quick.bite.models.CartItem
-import com.quick.bite.repositories.SessionDataRepository
+import com.quick.bite.api.RetrofitClient
+import com.quick.bite.data.db.QuickBiteDatabaseManager
+import com.quick.bite.data.repository.QuickBiteRepository
+import com.quick.bite.model.Item
+import com.quick.bite.model.MasterOrder
+import com.quick.bite.model.Order
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
-/**
- * CheckoutActivity - Handles the checkout flow with order summary, promo codes, and payment methods.
- *
- * Layout Architecture:
- * - Top App Bar (L4: RelativeLayout)
- * - Scrollable Content with Order Items (L3: LinearLayout)
- * - Promo Input with Icon Overlay (L5: FrameLayout)
- * - Payment Method Cards (L4: RelativeLayout)
- * - Price Breakdown Table (L7: TableLayout)
- * - Fixed Footer with Place Order Button
- */
 class CheckoutActivity : AppCompatActivity() {
 
     companion object {
-        private const val COUPON_CODE = "SAVE10"
-        private const val COUPON_DISCOUNT_PERCENT = 0.10
+        private const val SAVE10_COUPON = "SAVE10"
+        private const val SAVE10_DISCOUNT_RATE = 0.10
+        private const val DELIVERY_FEE = 2.00
     }
 
-    // Order Summary Views
+    private lateinit var repository: QuickBiteRepository
     private lateinit var itemOrder1: View
     private lateinit var itemOrder2: View
     private lateinit var itemOrder3: View
-
-    // Payment Method Cards
-    private lateinit var paymentCard: View
-    private lateinit var paymentCash: View
-
-    // Buttons
-    private lateinit var btnBack: ImageButton
-    private lateinit var btnApplyPromo: Button
-    private lateinit var btnPlaceOrder: Button
     private lateinit var tvItemCount: TextView
     private lateinit var tvSubtotal: TextView
     private lateinit var tvDeliveryFee: TextView
-    private lateinit var tvTotalAmount: TextView
     private lateinit var tvDiscount: TextView
+    private lateinit var tvTotalAmount: TextView
     private lateinit var etPromoCode: EditText
-    private lateinit var tvCartEmpty: TextView
-    private lateinit var layoutOrderSummaryHeader: View
-    private lateinit var layoutPriceBreakdown: View
+    private lateinit var paymentCard: View
+    private lateinit var paymentCash: View
+    private lateinit var btnApplyPromo: Button
+    private lateinit var btnPlaceOrder: Button
 
-    private var isCouponApplied = false
+    private data class CheckoutLineItem(val item: Item, val quantity: Int)
+
+    private var lineItems: List<CheckoutLineItem> = emptyList()
+    private var subtotal = 0.0
+    private var discountAmount = 0.0
+    private var appliedPromoCode: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_checkout)
 
+        repository = QuickBiteRepository(RetrofitClient.getApiService(), QuickBiteDatabaseManager(this))
+
+        setupToolbar()
         initViews()
-        setupOrderItems()
+        loadCartData()
         setupPaymentMethods()
         setupClickListeners()
     }
 
+    private fun loadCartData() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val cartData = repository.getCartLineItems()
+            val itemCount = repository.getCartItemCount()
+
+            withContext(Dispatchers.Main) {
+                lineItems = cartData.map { CheckoutLineItem(it.first, it.second) }
+                tvItemCount.text = String.format(Locale.US, "%d items", itemCount)
+                setupOrderItems()
+            }
+        }
+    }
+
+    private fun setupToolbar() {
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar_checkout)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(true)
+        toolbar.navigationIcon?.setTint(ContextCompat.getColor(this, R.color.navy))
+    }
+
     private fun initViews() {
-        // Order items
         itemOrder1 = findViewById(R.id.item_order_1)
         itemOrder2 = findViewById(R.id.item_order_2)
         itemOrder3 = findViewById(R.id.item_order_3)
-
-        // Payment cards
-        paymentCard = findViewById(R.id.rl_payment_card)
-        paymentCash = findViewById(R.id.rl_payment_cash)
-
-        // Buttons
-        btnBack = findViewById(R.id.btn_back)
-        btnApplyPromo = findViewById(R.id.btn_apply_promo)
-        btnPlaceOrder = findViewById(R.id.btn_place_order)
-
         tvItemCount = findViewById(R.id.tv_item_count)
         tvSubtotal = findViewById(R.id.tv_subtotal)
         tvDeliveryFee = findViewById(R.id.tv_delivery_fee)
-        tvTotalAmount = findViewById(R.id.tv_total_amount)
         tvDiscount = findViewById(R.id.tv_discount)
+        tvTotalAmount = findViewById(R.id.tv_total_amount)
         etPromoCode = findViewById(R.id.et_promo_code)
-        tvCartEmpty = findViewById(R.id.tv_cart_empty)
-        layoutOrderSummaryHeader = findViewById(R.id.layout_order_summary_header)
-        layoutPriceBreakdown = findViewById(R.id.layout_price_breakdown)
+        paymentCard = findViewById(R.id.rl_payment_card)
+        paymentCash = findViewById(R.id.rl_payment_cash)
+        btnApplyPromo = findViewById(R.id.btn_apply_promo)
+        btnPlaceOrder = findViewById(R.id.btn_place_order)
     }
 
     private fun setupOrderItems() {
-        val cartItems = SessionDataRepository.getCartItems()
-        val orderViews = listOf(itemOrder1, itemOrder2, itemOrder3)
-        val isCartEmpty = cartItems.isEmpty()
-
-        tvCartEmpty.visibility = if (isCartEmpty) View.VISIBLE else View.GONE
-        layoutOrderSummaryHeader.visibility = if (isCartEmpty) View.GONE else View.VISIBLE
-        findViewById<View>(R.id.ll_order_items).visibility = if (isCartEmpty) View.GONE else View.VISIBLE
-        layoutPriceBreakdown.visibility = if (isCartEmpty) View.GONE else View.VISIBLE
-        btnPlaceOrder.isEnabled = !isCartEmpty
-        btnPlaceOrder.alpha = if (isCartEmpty) 0.5f else 1f
-
-        orderViews.forEachIndexed { index, view ->
-            val cartItem = cartItems.getOrNull(index)
-            if (cartItem == null) {
-                view.visibility = View.GONE
+        val itemViews = listOf(itemOrder1, itemOrder2, itemOrder3)
+        itemViews.forEachIndexed { index, itemView ->
+            val lineItem = lineItems.getOrNull(index)
+            if (lineItem == null) {
+                itemView.visibility = View.GONE
             } else {
-                view.visibility = View.VISIBLE
-                setupOrderItem(view, cartItem)
+                itemView.visibility = View.VISIBLE
+                setupOrderItem(
+                    itemView = itemView,
+                    lineItem = lineItem,
+                    imageRes = resolveDrawableByName(lineItem.item.imageUrl, imageForItem(index)),
+                    onPlusClicked = {
+                        repository.addToCart(lineItem.item)
+                        loadCartData()
+                    },
+                    onMinusClicked = {
+                        repository.decreaseCartItem(lineItem.item.itemID)
+                        loadCartData()
+                    },
+                    onRemoveClicked = {
+                        repository.removeFromCart(lineItem.item.itemID)
+                        loadCartData()
+                    }
+                )
             }
         }
 
-        updatePriceSummary()
+        subtotal = roundToTwoDecimals(lineItems.sumOf { it.item.itemPrice * it.quantity })
+        recalculateTotals()
     }
 
-    private fun setupOrderItem(itemView: View, cartItem: CartItem) {
-        itemView.findViewById<ImageView>(R.id.iv_product_image).setImageResource(R.drawable.image_2)
-        itemView.findViewById<TextView>(R.id.tv_product_name).text = cartItem.productName
-        itemView.findViewById<TextView>(R.id.tv_product_customization).text = cartItem.description
-        itemView.findViewById<TextView>(R.id.tv_product_price).text = SessionDataRepository.formatMoney(cartItem.unitPrice)
-        itemView.findViewById<TextView>(R.id.tv_quantity).text = cartItem.quantity.toString()
+    private fun setupOrderItem(itemView: View, lineItem: CheckoutLineItem, imageRes: Int, onPlusClicked: () -> Unit, onMinusClicked: () -> Unit, onRemoveClicked: () -> Unit) {
+        itemView.findViewById<ImageView>(R.id.iv_product_image).setImageResource(imageRes)
+        itemView.findViewById<TextView>(R.id.tv_product_name).text = lineItem.item.itemName
+        itemView.findViewById<TextView>(R.id.tv_product_customization).text = lineItem.item.itemDescription
+        itemView.findViewById<TextView>(R.id.tv_product_price).text = formatCurrency(lineItem.item.itemPrice)
+        itemView.findViewById<TextView>(R.id.tv_quantity).text = lineItem.quantity.toString()
+
+        itemView.findViewById<MaterialButton>(R.id.btn_plus_quantity).setOnClickListener { onPlusClicked() }
+        itemView.findViewById<MaterialButton>(R.id.btn_minus_quantity).setOnClickListener { onMinusClicked() }
+        itemView.findViewById<MaterialButton>(R.id.btn_remove_item).setOnClickListener { onRemoveClicked() }
     }
 
-    private fun setupPaymentMethods() {
-        // Credit Card is selected by default
-        updatePaymentSelection(isCardSelected = true)
-    }
+    private fun setupPaymentMethods() = updatePaymentSelection(isCardSelected = true)
 
     private fun setupClickListeners() {
-        btnBack.setOnClickListener {
-            onBackPressed()
-        }
-
-        btnApplyPromo.setOnClickListener {
-            applyPromoCode()
-        }
-
-        btnPlaceOrder.setOnClickListener {
-            placeOrder()
-        }
-
-        paymentCard.setOnClickListener {
-            updatePaymentSelection(isCardSelected = true)
-        }
-
-        paymentCash.setOnClickListener {
-            updatePaymentSelection(isCardSelected = false)
-        }
+        btnApplyPromo.setOnClickListener { applyPromoCode() }
+        btnPlaceOrder.setOnClickListener { placeOrder() }
+        paymentCard.setOnClickListener { updatePaymentSelection(isCardSelected = true) }
+        paymentCash.setOnClickListener { updatePaymentSelection(isCardSelected = false) }
     }
 
     private fun updatePaymentSelection(isCardSelected: Boolean) {
         if (isCardSelected) {
-            // Update Card UI to selected
             paymentCard.setBackgroundResource(R.drawable.bg_payment_selected)
+            paymentCard.findViewById<View>(R.id.fl_card_icon).setBackgroundResource(R.drawable.bg_payment_icon_selected)
             paymentCard.findViewById<ImageView>(R.id.iv_check_card).visibility = View.VISIBLE
-            paymentCard.findViewById<ImageView>(R.id.img_card).setColorFilter(
-                getColor(R.color.primary),
-                PorterDuff.Mode.SRC_IN
-            )
-
-            // Update Cash UI to unselected
             paymentCash.setBackgroundResource(R.drawable.bg_payment_unselected)
-            paymentCash.findViewById<ImageView>(R.id.iv_check_cod).visibility = View.GONE
-            paymentCash.findViewById<ImageView>(R.id.img_cod).setColorFilter(
-                getColor(R.color.grey_text),
-                PorterDuff.Mode.SRC_IN
-            )
+            paymentCash.findViewById<View>(R.id.fl_cash_icon).setBackgroundResource(R.drawable.bg_payment_icon_unselected)
         } else {
-            // Update Cash UI to selected
             paymentCash.setBackgroundResource(R.drawable.bg_payment_selected)
-            paymentCash.findViewById<ImageView>(R.id.iv_check_cod).visibility = View.VISIBLE
-            paymentCash.findViewById<ImageView>(R.id.img_cod).setColorFilter(
-                getColor(R.color.primary),
-                PorterDuff.Mode.SRC_IN
-            )
-
-
-            // Update Card UI to unselected
+            paymentCash.findViewById<View>(R.id.fl_cash_icon).setBackgroundResource(R.drawable.bg_payment_icon_selected)
             paymentCard.setBackgroundResource(R.drawable.bg_payment_unselected)
+            paymentCard.findViewById<View>(R.id.fl_card_icon).setBackgroundResource(R.drawable.bg_payment_icon_unselected)
             paymentCard.findViewById<ImageView>(R.id.iv_check_card).visibility = View.GONE
-            paymentCard.findViewById<ImageView>(R.id.img_card).setColorFilter(
-                getColor(R.color.grey_text),
-                PorterDuff.Mode.SRC_IN
-            )
         }
     }
 
     private fun applyPromoCode() {
-        val enteredCode = etPromoCode.text.toString().trim()
-        if (enteredCode.equals(COUPON_CODE, ignoreCase = true)) {
-            isCouponApplied = true
-            updatePriceSummary()
-            Toast.makeText(this, "Coupon applied: 10% off", Toast.LENGTH_SHORT).show()
+        val enteredCode = etPromoCode.text.toString().trim().uppercase(Locale.US)
+        if (enteredCode == SAVE10_COUPON) {
+            appliedPromoCode = enteredCode
+            discountAmount = roundToTwoDecimals(subtotal * SAVE10_DISCOUNT_RATE)
+            Toast.makeText(this, "SAVE10 applied: 10% off subtotal", Toast.LENGTH_SHORT).show()
         } else {
-            isCouponApplied = false
-            updatePriceSummary()
+            appliedPromoCode = ""
+            discountAmount = 0.0
             Toast.makeText(this, "Invalid coupon code", Toast.LENGTH_SHORT).show()
         }
+        recalculateTotals()
     }
 
     private fun placeOrder() {
-        val discountPercent = if (isCouponApplied) COUPON_DISCOUNT_PERCENT else 0.0
-        val order = SessionDataRepository.placeOrder(discountPercent)
-        if (order == null) {
-            Toast.makeText(this, "Your cart is empty", Toast.LENGTH_SHORT).show()
-            return
+        if (lineItems.isEmpty()) return
+
+        val totalAmount = roundToTwoDecimals(subtotal + DELIVERY_FEE - discountAmount)
+        val user = repository.getCurrentUser()
+
+        val masterOrder = MasterOrder(
+            masterID = 0,
+            userID = user?.userEmail ?: "tech@example.com",
+            usercode = user?.usercode ?: "",
+            restaurantID = lineItems.first().item.restaurantID, // Dynamically pull Restaurant ID from Cart
+            grandtotal = totalAmount
+        )
+
+        val orderItems = lineItems.map {
+            Order(
+                orderID = 0,
+                userID = masterOrder.userID,
+                itemName = it.item.itemName,
+                quantity = it.quantity,
+                itemPrice = it.item.itemPrice,
+                totalPrice = it.item.itemPrice * it.quantity,
+                masterID = 0
+            )
         }
 
-        Toast.makeText(this, "Order placed successfully!", Toast.LENGTH_SHORT).show()
-        finish()
+        lifecycleScope.launch(Dispatchers.Main) {
+            btnPlaceOrder.isEnabled = false
+            val result = repository.placeOrder(masterOrder, orderItems)
+
+            result.onSuccess { masterId ->
+                repository.clearCart()
+                Toast.makeText(this@CheckoutActivity, "Order #$masterId Placed!", Toast.LENGTH_SHORT).show()
+                finish()
+            }.onFailure {
+                btnPlaceOrder.isEnabled = true
+                Toast.makeText(this@CheckoutActivity, "Error saving order.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
-    private fun updatePriceSummary() {
-        val totalItems = SessionDataRepository.getCartItemCount()
-        val subtotal = SessionDataRepository.getCartSubtotal()
-        val deliveryFee = if (subtotal > 0.0) 2.0 else 0.0
-        val discount = if (isCouponApplied) subtotal * COUPON_DISCOUNT_PERCENT else 0.0
-        val total = subtotal + deliveryFee - discount
+    private fun recalculateTotals() {
+        val totalAmount = roundToTwoDecimals(subtotal + DELIVERY_FEE - discountAmount)
+        tvSubtotal.text = formatCurrency(subtotal)
+        tvDeliveryFee.text = formatCurrency(DELIVERY_FEE)
+        tvDiscount.text = String.format(Locale.US, "-$%.2f", discountAmount)
+        tvTotalAmount.text = formatCurrency(totalAmount)
+    }
 
-        tvItemCount.text = "$totalItems Items"
-        tvSubtotal.text = SessionDataRepository.formatMoney(subtotal)
-        tvDeliveryFee.text = SessionDataRepository.formatMoney(deliveryFee)
-        tvDiscount.text = "-${SessionDataRepository.formatMoney(discount)}"
-        tvTotalAmount.text = SessionDataRepository.formatMoney(total)
+    private fun imageForItem(index: Int): Int = when (index) {
+        0 -> R.drawable.img_burger
+        1 -> R.drawable.img_fries
+        else -> R.drawable.img_drink
+    }
+
+    private fun resolveDrawableByName(drawableName: String, fallbackResId: Int): Int {
+        val resolvedId = resources.getIdentifier(drawableName, "drawable", packageName)
+        return if (resolvedId != 0) resolvedId else fallbackResId
+    }
+
+    private fun formatCurrency(value: Double): String = String.format(Locale.US, "$%.2f", value)
+    private fun roundToTwoDecimals(value: Double): Double = kotlin.math.round(value * 100.0) / 100.0
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressedDispatcher.onBackPressed()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 }
-
-
