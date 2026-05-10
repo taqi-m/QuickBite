@@ -11,21 +11,25 @@
     <string name="register">Register</string>
     <string name="create_account">Create Account</string>
     <string name="back_to_login">Back to Login</string>
-    <string name="username">Username</string>
+    <string name="email">Email</string>
     <string name="password">Password</string>
+    <string name="google_sign_in">Sign in with Google</string>
     <string name="dont_have_account">Don\'t have an account? Tap here to create one</string>
     <string name="already_have_account">Already have an account? Tap here to login</string>
     <string name="welcome_user">Welcome, %s!</string>
     <string name="account_created">Account created successfully! Welcome, %s!</string>
 
     <!-- Error Messages -->
-    <string name="error_username_required">Username is required</string>
+    <string name="error_email_required">Email is required</string>
+    <string name="error_invalid_email">Please enter a valid email address</string>
     <string name="error_username_too_short">Username must be at least 3 characters</string>
     <string name="error_password_required">Password is required</string>
     <string name="error_password_too_short">Password must be at least %d characters</string>
     <string name="error_username_taken">Username is already taken</string>
     <string name="error_login_failed">Login failed. Please check your credentials.</string>
     <string name="error_registration_failed">Registration failed. Please try again.</string>
+    <string name="error_google_sign_in_failed">Google sign in failed. Please try again.</string>
+    <string name="default_web_client_id">1075015458242-84f8lhabupl42v1mvd0kulmjprkm8u3n.apps.googleusercontent.com</string>
 
     <!-- App -->
     <string name="app_logo">QuickBite Logo</string>
