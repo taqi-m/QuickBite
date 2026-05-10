@@ -20,12 +20,15 @@ import com.quick.bite.ui.activities.MainActivity
 import com.quick.bite.R
 import com.quick.bite.data.db.QuickBiteDatabaseManager
 import com.quick.bite.data.repository.QuickBiteRepository
+import com.quick.bite.data.repository.RealtimeDatabaseRepository
 import com.quick.bite.model.Restaurant
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
     private lateinit var repository: QuickBiteRepository
+    private lateinit var realtimeRepository: RealtimeDatabaseRepository
     private lateinit var progressBar: ProgressBar
     private lateinit var rvKitchens: RecyclerView
 
@@ -54,30 +57,36 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         repository = QuickBiteRepository(QuickBiteDatabaseManager(requireContext()))
+        realtimeRepository = RealtimeDatabaseRepository()
         progressBar = view.findViewById(R.id.pb_home_loading)
         rvKitchens = view.findViewById(R.id.rv_active_kitchens)
 
         setupDashboardWidgets(view)
         setupCartButton(view)
+        
+        observeRestaurants()
     }
 
-    override fun onResume() {
-        super.onResume()
-        loadRestaurants()
-    }
-
-    private fun loadRestaurants() {
+    private fun observeRestaurants() {
         progressBar.visibility = View.VISIBLE
-
         viewLifecycleOwner.lifecycleScope.launch {
-            // repository.getRestaurants() now returns Result<List<Restaurant>>[cite: 1, 8]
-            val result = repository.getRestaurants()
-            progressBar.visibility = View.GONE
+            realtimeRepository.getRestaurantsStream().collectLatest { restaurants ->
+                progressBar.visibility = View.GONE
+                if (restaurants.isEmpty()) {
+                    // Fallback to legacy repository if Firebase is empty (during migration)
+                    loadRestaurantsLegacy()
+                } else {
+                    updateKitchensList(restaurants)
+                }
+            }
+        }
+    }
 
+    private fun loadRestaurantsLegacy() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result = repository.getRestaurants()
             result.onSuccess { restaurants ->
                 updateKitchensList(restaurants)
-            }.onFailure { error ->
-                Toast.makeText(context, "Critical Error: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -24,11 +24,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.firebase.auth.FirebaseAuth
 import com.quick.bite.R
 import com.quick.bite.data.db.QuickBiteDatabaseManager
 import com.quick.bite.data.repository.QuickBiteRepository
+import com.quick.bite.data.repository.RealtimeDatabaseRepository
 import com.quick.bite.model.Item
 import com.quick.bite.model.Restaurant
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -39,6 +42,7 @@ class RestaurantDetailActivity : AppCompatActivity() {
     }
 
     private lateinit var repository: QuickBiteRepository
+    private lateinit var realtimeRepository: RealtimeDatabaseRepository
     private lateinit var toolbar: Toolbar
     private lateinit var progressBar: ProgressBar
     private lateinit var categoryChipGroup: ChipGroup
@@ -63,8 +67,9 @@ class RestaurantDetailActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.restaurant_detail_screen)
 
-        // Initialize repository with correct constructor
+        // Initialize repositories
         repository = QuickBiteRepository(QuickBiteDatabaseManager(this))
+        realtimeRepository = RealtimeDatabaseRepository()
 
         initViews()
         setupSystemBars()
@@ -75,9 +80,22 @@ class RestaurantDetailActivity : AppCompatActivity() {
         val restaurantId = intent.getIntExtra(EXTRA_RESTAURANT_ID, -1)
         if (restaurantId != -1) {
             loadRestaurantData(restaurantId)
+            observeMenuItems(restaurantId)
         } else {
             Toast.makeText(this, "Invalid Restaurant ID", Toast.LENGTH_SHORT).show()
             finish()
+        }
+    }
+
+    private fun observeMenuItems(restaurantId: Int) {
+        lifecycleScope.launch {
+            realtimeRepository.getItemsStream(restaurantId).collectLatest { items ->
+                if (items.isNotEmpty()) {
+                    allMenuItems = items
+                    updateMenuItems(items)
+                    setupCategoryChips(items)
+                }
+            }
         }
     }
 
@@ -137,17 +155,13 @@ class RestaurantDetailActivity : AppCompatActivity() {
                 ).show()
             }
 
-            // Handle menu items
+            // Handle menu items (initial load, real-time listener will take over)
             menuResult.onSuccess { items ->
-                allMenuItems = items
-                updateMenuItems(items)
-                setupCategoryChips(items)
-            }.onFailure { error ->
-                Toast.makeText(
-                    this@RestaurantDetailActivity,
-                    "Error loading menu: ${error.localizedMessage}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                if (allMenuItems.isEmpty()) {
+                    allMenuItems = items
+                    updateMenuItems(items)
+                    setupCategoryChips(items)
+                }
             }
 
             // Refresh cart count after loading
@@ -246,35 +260,25 @@ class RestaurantDetailActivity : AppCompatActivity() {
      * Uses the actual repository method signature: addToCart(userID: Int, itemID: Int, quantity: Int)
      */
     private fun onAddToCartClicked(item: Item) {
-        lifecycleScope.launch {
-            // Get the complete user object, not just the ID
-            val currentUserResult = repository.getCurrentUser()
-
-            currentUserResult.onSuccess { user ->
-                // user.userID is Long: 1777500255961
-                val result = repository.addToCart(user.userID, item.itemID, 1)
-                result.onSuccess {
-                    refreshCartCount()
-                    Toast.makeText(
-                        this@RestaurantDetailActivity,
-                        "${item.name} added to cart",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }.onFailure { error ->
-                    Toast.makeText(
-                        this@RestaurantDetailActivity,
-                        "Failed to add to cart: ${error.localizedMessage}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    Log.e("DetailActivity", "Cart error", error)
-                }
-            }.onFailure { error ->
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        if (firebaseUser != null) {
+            lifecycleScope.launch {
+                realtimeRepository.updateCartItem(firebaseUser.uid, item.itemID, 1)
                 Toast.makeText(
                     this@RestaurantDetailActivity,
-                    "User not logged in: ${error.localizedMessage}",
+                    "${item.name} added to cart",
                     Toast.LENGTH_SHORT
                 ).show()
-                Log.e("DetailActivity", "No user found", error)
+            }
+        } else {
+            // Fallback to legacy
+            lifecycleScope.launch {
+                val currentUserResult = repository.getCurrentUser()
+                currentUserResult.onSuccess { user ->
+                    repository.addToCart(user.userID, item.itemID, 1).onSuccess {
+                        refreshCartCount()
+                    }
+                }
             }
         }
     }
@@ -283,28 +287,24 @@ class RestaurantDetailActivity : AppCompatActivity() {
      * Refreshes the cart count from the repository.
      */
     private fun refreshCartCount() {
-        lifecycleScope.launch {
-            val currentUserResult = repository.getCurrentUser()
-
-            currentUserResult.onSuccess { user ->
-                val cartResult = repository.getCart(user.userID)
-                cartResult.onSuccess { cart ->
-                    cartItemCount = cart.items.values.sum()
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        if (firebaseUser != null) {
+            lifecycleScope.launch {
+                realtimeRepository.getCartStream(firebaseUser.uid).collectLatest { cart ->
+                    cartItemCount = cart.values.sum()
                     updateCartButtonState()
-                }.onFailure { error ->
-                    // If cart fetch fails, try local cart
-                    val localCartResult = repository.getLocalCart(user.userID)
-                    localCartResult.onSuccess { cartItems ->
-                        cartItemCount = cartItems.sumOf { (it["quantity"] as? Int) ?: 0 }
+                }
+            }
+        } else {
+            lifecycleScope.launch {
+                val currentUserResult = repository.getCurrentUser()
+                currentUserResult.onSuccess { user ->
+                    val cartResult = repository.getCart(user.userID)
+                    cartResult.onSuccess { cart ->
+                        cartItemCount = cart.items.values.sum()
                         updateCartButtonState()
-                    }.onFailure {
-                        Log.e("DetailActivity", "Failed to get cart", error)
-                        btnViewCart.visibility = View.GONE
                     }
                 }
-            }.onFailure { error ->
-                Log.e("DetailActivity", "No user found for cart refresh", error)
-                btnViewCart.visibility = View.GONE
             }
         }
     }
