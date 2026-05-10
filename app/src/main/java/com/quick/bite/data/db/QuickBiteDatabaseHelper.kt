@@ -20,7 +20,7 @@ class QuickBiteDatabaseHelper(context: Context) :
     companion object {
 
         const val DATABASE_NAME = "quick_bite.db"
-        const val DATABASE_VERSION = 2
+        const val DATABASE_VERSION = 3
 
         // =========================
         // USERS TABLE
@@ -29,7 +29,7 @@ class QuickBiteDatabaseHelper(context: Context) :
             "CREATE TABLE ${QuickBiteContract.UserEntry.TABLE_NAME} (" +
                     "${QuickBiteContract.UserEntry.COLUMN_USER_ID} INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "${QuickBiteContract.UserEntry.COLUMN_USERNAME} TEXT NOT NULL," +
-                    "${QuickBiteContract.UserEntry.COLUMN_PASSWORD} TEXT NOT NULL" +
+                    "${QuickBiteContract.UserEntry.COLUMN_PASSWORD} TEXT" +
                     ")"
 
         // =========================
