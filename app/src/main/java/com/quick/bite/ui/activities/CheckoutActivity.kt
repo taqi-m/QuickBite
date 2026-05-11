@@ -17,12 +17,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.google.firebase.auth.FirebaseAuth
 import com.quick.bite.R
 import com.quick.bite.data.db.QuickBiteDatabaseManager
 import com.quick.bite.data.repository.QuickBiteRepository
+import com.quick.bite.data.repository.RealtimeDatabaseRepository
 import com.quick.bite.model.Cart
 import com.quick.bite.model.Item
+import com.quick.bite.model.Order
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
@@ -36,6 +40,7 @@ class CheckoutActivity : AppCompatActivity() {
     }
 
     private lateinit var repository: QuickBiteRepository
+    private lateinit var realtimeRepository: RealtimeDatabaseRepository
     private lateinit var rvOrderItems: RecyclerView
     private lateinit var tvItemCount: TextView
     private lateinit var tvSubtotal: TextView
@@ -61,14 +66,40 @@ class CheckoutActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_checkout)
 
-        // Initialize repository with correct constructor
+        // Initialize repositories
         repository = QuickBiteRepository(QuickBiteDatabaseManager(this))
+        realtimeRepository = RealtimeDatabaseRepository()
 
         setupToolbar()
         initViews()
         setupRecyclerView()
         setupPaymentMethods()
         setupClickListeners()
+        
+        observeCart()
+    }
+
+    private fun observeCart() {
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        if (firebaseUser != null) {
+            lifecycleScope.launch {
+                realtimeRepository.getCartStream(firebaseUser.uid).collectLatest { cartMap ->
+                    // Convert Map<Int, Int> to Map<String, Int> to match existing Cart model and UI logic
+                    val stringCartMap = cartMap.mapKeys { it.key.toString() }
+                    
+                    // Fetch menu items if needed
+                    if (stringCartMap.isNotEmpty() && menuItems.isEmpty()) {
+                        val itemsResult = repository.getItems()
+                        itemsResult.onSuccess { items ->
+                            menuItems = items.associateBy { it.itemID }
+                        }
+                    }
+                    
+                    cartItems = stringCartMap
+                    updateUI(Cart(userID = firebaseUser.uid, items = stringCartMap))
+                }
+            }
+        }
     }
 
     override fun onResume() {
@@ -111,40 +142,15 @@ class CheckoutActivity : AppCompatActivity() {
         )
         rvOrderItems.adapter = checkoutAdapter
     }
-
-    /**
-     * Loads cart data from the repository.
-     * Uses getCart() to fetch cart items and getItems() for item details.
-     */
     private fun loadCartData() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            // Fetch cart from repository
-
-            val currentUserResult = repository.getCurrentUser()
-            currentUserResult.onSuccess { user ->
-                val cartResult = repository.getCart(user.userID)
-
-                cartResult.onSuccess { cart ->
-                    cartItems = cart.items
-
-                    // Fetch all items to get details for cart items
-                    if (cartItems.isNotEmpty()) {
-                        val itemsResult = repository.getItems()
-                        itemsResult.onSuccess { items ->
-                            menuItems = items.associateBy { it.itemID }
-                        }
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        updateUI(cart)
-                    }
-                }.onFailure { error ->
-                    // Try local cart as fallback
-                    val localCartResult = repository.getLocalCart(user.userID)
-                    localCartResult.onSuccess { localItems ->
-                        cartItems = localItems.associate {
-                            (it["itemID"]?.toString() ?: "0") to ((it["quantity"] as? Int) ?: 0)
-                        }
+        // Real-time listener handles this for Firebase users
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                val currentUserResult = repository.getCurrentUser()
+                currentUserResult.onSuccess { user ->
+                    val cartResult = repository.getCart(user.userID)
+                    cartResult.onSuccess { cart ->
+                        cartItems = cart.items
                         if (cartItems.isNotEmpty()) {
                             val itemsResult = repository.getItems()
                             itemsResult.onSuccess { items ->
@@ -152,22 +158,11 @@ class CheckoutActivity : AppCompatActivity() {
                             }
                         }
                         withContext(Dispatchers.Main) {
-                            updateUI(Cart(userID = user.toString(), items = cartItems))
-                        }
-                    }.onFailure {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                this@CheckoutActivity,
-                                "Failed to load cart: ${error.localizedMessage}",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            updateUI(cart)
                         }
                     }
                 }
-            }.onFailure {
-
             }
-
         }
     }
 
@@ -209,23 +204,19 @@ class CheckoutActivity : AppCompatActivity() {
      * Increments the quantity of an item in the cart.
      */
     private fun incrementItem(itemId: Int) {
-
-        lifecycleScope.launch {
-            val currentUserResult = repository.getCurrentUser()
-
-            currentUserResult.onSuccess { user ->
-                val result = repository.addToCart(user.userID, itemId, 1)
-                result.onSuccess {
-                    loadCartData() // Refresh the entire cart
-                }.onFailure { error ->
-                    Toast.makeText(
-                        this@CheckoutActivity,
-                        "Failed to update quantity: ${error.localizedMessage}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        if (firebaseUser != null) {
+            lifecycleScope.launch {
+                realtimeRepository.updateCartItem(firebaseUser.uid, itemId, 1)
+            }
+        } else {
+            lifecycleScope.launch {
+                val currentUserResult = repository.getCurrentUser()
+                currentUserResult.onSuccess { user ->
+                    repository.addToCart(user.userID, itemId, 1).onSuccess {
+                        loadCartData()
+                    }
                 }
-            }.onFailure {
-
             }
         }
     }
@@ -235,29 +226,23 @@ class CheckoutActivity : AppCompatActivity() {
      * If quantity reaches 0, removes the item.
      */
     private fun decrementItem(itemId: Int) {
-        val currentQty = cartItems[itemId.toString()] ?: 0
-        if (currentQty <= 1) {
-            deleteItem(itemId)
-        } else {
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        if (firebaseUser != null) {
             lifecycleScope.launch {
-                val currentUserResult = repository.getCurrentUser()
-
-                currentUserResult.onSuccess { user ->
-
-                    // Update cart with reduced quantity
-                    val result = repository.addToCart(user.userID, itemId, currentQty - 1)
-                    result.onSuccess {
-                        loadCartData()
-                    }.onFailure { error ->
-                        Toast.makeText(
-                            this@CheckoutActivity,
-                            "Failed to update quantity: ${error.localizedMessage}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                realtimeRepository.updateCartItem(firebaseUser.uid, itemId, -1)
+            }
+        } else {
+            val currentQty = cartItems[itemId.toString()] ?: 0
+            if (currentQty <= 1) {
+                deleteItem(itemId)
+            } else {
+                lifecycleScope.launch {
+                    val currentUserResult = repository.getCurrentUser()
+                    currentUserResult.onSuccess { user ->
+                        repository.addToCart(user.userID, itemId, currentQty - 1).onSuccess {
+                            loadCartData()
+                        }
                     }
-
-                }.onFailure {
-
                 }
             }
         }
@@ -267,26 +252,20 @@ class CheckoutActivity : AppCompatActivity() {
      * Removes an item completely from the cart.
      */
     private fun deleteItem(itemId: Int) {
-        lifecycleScope.launch {
-            val currentUserResult = repository.getCurrentUser()
-
-            currentUserResult.onSuccess { user ->
-                val result = repository.removeCartItem(user.userID, itemId)
-                result.onSuccess {
-                    loadCartData()
-                    Toast.makeText(this@CheckoutActivity, "Item removed from cart", Toast.LENGTH_SHORT).show()
-                }.onFailure { error ->
-                    Toast.makeText(
-                        this@CheckoutActivity,
-                        "Failed to remove item: ${error.localizedMessage}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-            }.onFailure {
-
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        if (firebaseUser != null) {
+            lifecycleScope.launch {
+                realtimeRepository.removeCartItem(firebaseUser.uid, itemId)
             }
-
+        } else {
+            lifecycleScope.launch {
+                val currentUserResult = repository.getCurrentUser()
+                currentUserResult.onSuccess { user ->
+                    repository.removeCartItem(user.userID, itemId).onSuccess {
+                        loadCartData()
+                    }
+                }
+            }
         }
     }
 
@@ -348,35 +327,33 @@ class CheckoutActivity : AppCompatActivity() {
 
         btnPlaceOrder.isEnabled = false
 
-        lifecycleScope.launch {
-            val currentUserResult = repository.getCurrentUser()
-
-            currentUserResult.onSuccess { user ->
-                // Convert cart items to Map<String, Int> format expected by the API
-                val orderItems = cartItems.mapValues { it.value }
-
-                val result = repository.placeOrder(user.userID, orderItems)
-
-                result.onSuccess { order ->
-                    // Clear the cart after successful order
-                    clearCartAfterOrder()
-                    Toast.makeText(
-                        this@CheckoutActivity,
-                        "Order #${order.orderID} Placed Successfully!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    finish()
-                }.onFailure { error ->
-                    btnPlaceOrder.isEnabled = true
-                    Toast.makeText(
-                        this@CheckoutActivity,
-                        "Failed to place order: ${error.localizedMessage}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    Log.d("CheckoutActivityLog", "Order placement failed", error)
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        if (firebaseUser != null) {
+            lifecycleScope.launch {
+                val totalWithFee = subtotal + DELIVERY_FEE - discountAmount
+                val order = Order(
+                    orderID = 0, // Repository will set this
+                    userID = 1L, // Legacy compatibility
+                    orderItems = cartItems,
+                    orderStatus = "PENDING",
+                    createdAt = System.currentTimeMillis(),
+                    totalAmount = totalWithFee
+                )
+                realtimeRepository.placeOrder(firebaseUser.uid, order)
+                Toast.makeText(this@CheckoutActivity, "Order Placed Successfully!", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        } else {
+            lifecycleScope.launch {
+                val currentUserResult = repository.getCurrentUser()
+                currentUserResult.onSuccess { user ->
+                    val result = repository.placeOrder(user.userID, cartItems)
+                    result.onSuccess { order ->
+                        clearCartAfterOrder()
+                        Toast.makeText(this@CheckoutActivity, "Order #${order.orderID} Placed!", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
                 }
-            }.onFailure {
-
             }
         }
     }

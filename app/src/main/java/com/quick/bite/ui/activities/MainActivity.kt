@@ -1,9 +1,14 @@
 package com.quick.bite.ui.activities
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.get
@@ -11,6 +16,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.quick.bite.R
 import com.quick.bite.adapters.MainPagerAdapter
+import com.quick.bite.service.QuickBiteMessagingService
 import com.quick.bite.ui.fragments.HomeFragment
 
 class MainActivity : AppCompatActivity(), HomeFragment.RestaurantSelectionContract {
@@ -22,6 +28,14 @@ class MainActivity : AppCompatActivity(), HomeFragment.RestaurantSelectionContra
     private lateinit var viewPager: ViewPager2
     private lateinit var bottomNavigation: BottomNavigationView
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission granted
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -30,6 +44,36 @@ class MainActivity : AppCompatActivity(), HomeFragment.RestaurantSelectionContra
         setupSystemBars()
         setupViewPager()
         setupBottomNavigation()
+        
+        handleIntent(intent)
+        askNotificationPermission()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        intent?.let {
+            val navigateTo = it.getStringExtra(QuickBiteMessagingService.EXTRA_NAVIGATION)
+            if (navigateTo == QuickBiteMessagingService.NAV_HISTORY) {
+                viewPager.currentItem = MainPagerAdapter.HOME_POSITION
+                bottomNavigation.selectedItemId = R.id.nav_home
+            }
+        }
+    }
+
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                // Already granted
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     private fun setupSystemBars() {

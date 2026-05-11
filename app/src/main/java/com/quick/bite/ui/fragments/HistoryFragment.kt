@@ -13,10 +13,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
+import com.google.firebase.auth.FirebaseAuth
 import com.quick.bite.R
 import com.quick.bite.data.db.QuickBiteDatabaseManager
 import com.quick.bite.data.repository.QuickBiteRepository
+import com.quick.bite.data.repository.RealtimeDatabaseRepository
 import com.quick.bite.model.Order
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -31,6 +34,7 @@ class HistoryFragment : Fragment() {
     private lateinit var tvEmptyState: TextView
 
     private lateinit var repository: QuickBiteRepository
+    private lateinit var realtimeRepository: RealtimeDatabaseRepository
     private lateinit var orderAdapter: OrderAdapter
 
     private var currentUserId: Long = -1
@@ -54,8 +58,9 @@ class HistoryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize repository
+        // Initialize repositories
         repository = QuickBiteRepository(QuickBiteDatabaseManager(requireContext()))
+        realtimeRepository = RealtimeDatabaseRepository()
 
         // Bind views
         progressBar = view.findViewById(R.id.pb_history_loading)
@@ -76,11 +81,30 @@ class HistoryFragment : Fragment() {
 
         // Setup tabs
         setupTabs()
+        
+        observeOrders()
+    }
+
+    private fun observeOrders() {
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        if (firebaseUser != null) {
+            progressBar.visibility = View.VISIBLE
+            viewLifecycleOwner.lifecycleScope.launch {
+                realtimeRepository.getOrdersStream(firebaseUser.uid).collectLatest { orders ->
+                    progressBar.visibility = View.GONE
+                    allOrders = orders
+                    filterAndDisplayOrders()
+                    updateSummary(orders)
+                }
+            }
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        loadOrderHistory()
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            loadOrderHistory()
+        }
     }
 
     /**
